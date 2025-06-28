@@ -38,7 +38,7 @@ class RuleBasedCreditCardBot:
         """Define regex patterns for each top-level JSON key (intent)."""
         return {
             'annual_fee': [r'annual fee', r'joining fee', r'cost', r'price', r'charge'],
-            'foreign_currency_markup_fee': [r'foreign currency', r'fx markup', r'forex fee', r'currency conversion', r'international transaction'],
+            'foreign_currency_markup_fee': [r'foreign currency', r'fx markup', r'forex', r'currency conversion', r'international transaction'],
             'welcome_benefit': [r'welcome benefit', r'joining bonus', r'sign-up offer'],
             'reward_point_structure': [r'reward', r'point', r'earn rate', r'cashback', r'milestone'],
             'mcc_exclusions': [r'mcc', r'merchant code', r'exclusion', r'not eligible', r'not count'],
@@ -72,14 +72,15 @@ class RuleBasedCreditCardBot:
         
         return best_intent, best_score
 
-    def extract_card_name(self, query: str) -> Optional[str]:
-        """Extract card name by finding keywords in the query."""
+    def extract_card_names(self, query: str) -> List[str]:
+        """Extract all card names mentioned in the query."""
         query_lower = query.lower()
+        found_cards = set()
         for card_name, keywords in self.card_name_patterns.items():
             for keyword in keywords:
                 if keyword in query_lower:
-                    return card_name
-        return None
+                    found_cards.add(card_name)
+        return list(found_cards)
         
     def get_greeting(self) -> str:
         """Fun greeting message"""
@@ -96,20 +97,34 @@ class RuleBasedCreditCardBot:
         greetings = ['hello', 'hi', 'hey', 'good morning', 'good afternoon', 'good evening']
         return any(greeting in query.lower() for greeting in greetings) and len(query.split()) <= 3
 
-    def get_relevant_data(self, intent: Optional[str], card_name: Optional[str]) -> Dict:
-        """Get relevant data based on intent and card."""
-        if card_name and card_name in self.credit_card_data:
-            card_data = self.credit_card_data[card_name]
-            if intent and intent in card_data:
-                return {card_name: {intent: card_data[intent]}}
-            else:
-                return {card_name: card_data}
-        elif intent:
+    def get_relevant_data(self, intent: Optional[str], card_names: List[str]) -> Dict:
+        """Get relevant data based on intent and a list of cards."""
+        # Handle comparison queries with multiple cards
+        if len(card_names) > 1 and intent:
+            comparison_data = {}
+            for name in card_names:
+                if name in self.credit_card_data and intent in self.credit_card_data[name]:
+                    comparison_data[name] = {intent: self.credit_card_data[name][intent]}
+            return comparison_data
+
+        # Handle single card queries
+        if len(card_names) == 1:
+            card_name = card_names[0]
+            if card_name in self.credit_card_data:
+                card_data = self.credit_card_data[card_name]
+                if intent and intent in card_data:
+                    return {card_name: {intent: card_data[intent]}}
+                else:
+                    return {card_name: card_data} # Return full data if intent unclear
+
+        # Handle queries with an intent but no specified card
+        if not card_names and intent:
             relevant_data = {}
             for name, data in self.credit_card_data.items():
                 if intent in data:
                     relevant_data[name] = {intent: data[intent]}
             return relevant_data
+            
         return {}
 
     def generate_answer(self, query: str, relevant_data: Dict) -> str:
@@ -165,9 +180,9 @@ Provide a clear and direct answer based on the data above.
                 return self.get_greeting()
 
             intent, confidence = self.detect_intent(user_query)
-            card_name = self.extract_card_name(user_query)
+            card_names = self.extract_card_names(user_query)
 
-            if confidence < 0.2 and not card_name:
+            if confidence < 0.2 and not card_names:
                 return """
 Hmm, I'm scratching my head a bit here! 🤔 Your question is a bit like asking "what's that thing about that stuff?" - I need a bit more to work with!
 
@@ -178,7 +193,7 @@ Try asking something like:
 I'm much better when I know what you're looking for! 😊
 """
             
-            relevant_data = self.get_relevant_data(intent, card_name)
+            relevant_data = self.get_relevant_data(intent, card_names)
             answer = self.generate_answer(user_query, relevant_data)
             return answer
             
@@ -202,3 +217,7 @@ if __name__ == '__main__':
     test_question_2 = "what is the annual fee for axis atlas"
     print(f"\nQ: {test_question_2}")
     print("A:", bot.get_answer(test_question_2))
+
+    test_question_3 = "between icici epm and axis atlas which has less forex markup fee"
+    print(f"\nQ: {test_question_3}")
+    print("A:", bot.get_answer(test_question_3))
