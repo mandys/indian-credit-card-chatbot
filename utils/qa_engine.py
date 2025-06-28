@@ -125,7 +125,7 @@ I promise I'm usually much more helpful than this! 😅
         context = json.dumps(relevant_data, indent=2)
         
         prompt = f"""
-Answer the following question using the credit card data provided. Be conversational, friendly, and add some humor where appropriate. Don't just list facts - explain them in a chatty way like you're talking to a friend who asked you about credit cards over coffee.
+Answer the following question using the credit card data provided. Be witty, friendly, and concise. Get straight to the point, but with personality. Use 1-2 short paragraphs. Use emojis, but don't overdo it. Avoid long explanations unless absolutely necessary.
 
 Question: {query}
 
@@ -133,25 +133,23 @@ Relevant Data:
 {context}
 
 Instructions for your response:
-- Be conversational and friendly
-- Add some light humor or personality
-- Explain things clearly but don't be too formal
-- Use emojis occasionally (but don't overdo it)
-- If there are multiple options, explain the differences
-- Give practical advice where relevant
-- Make it engaging to read
+- Be witty, friendly, and concise.
+- Get straight to the point, but with personality.
+- Use 1-2 short paragraphs.
+- Use emojis, but don't overdo it.
+- Avoid long explanations unless absolutely necessary.
 
-Provide a detailed, chatty answer based on the data above.
+Provide a short and witty answer based on the data above.
 """
         
         response = self.client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a friendly, knowledgeable credit card expert with a great sense of humor. You love helping people understand credit cards without being boring or overly formal. You explain things like you're chatting with a good friend over coffee. You're accurate with facts but make the conversation enjoyable."},
+                {"role": "system", "content": "You are a friendly, knowledgeable credit card expert with a great sense of humor. You are known for giving clear, witty, and concise answers. You explain things like a smart friend who gets straight to the point but still makes it fun."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.7,
-            max_tokens=800
+            temperature=0.6,
+            max_tokens=250
         )
         
         return response.choices[0].message.content
