@@ -5,6 +5,7 @@
       "currency": "INR",
       "notes": "Joining and Annual fee is INR 12,500 + GST. This is offset by 12,500 bonus reward points (valued at INR 1 each) credited upon fee payment."
     },
+    "foreign_currency_markup_fee": "2% + GST",
     "welcome_benefit": {
       "rules": [
         {

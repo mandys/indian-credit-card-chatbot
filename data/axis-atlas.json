@@ -9,6 +9,7 @@
       "currency": "INR",
       "notes": "plus GST"
     },
+    "foreign_currency_markup_fee": "3.5% + GST",
     "welcome_benefit": {
       "notes": "Applicable only for paid cards",
       "rules": [

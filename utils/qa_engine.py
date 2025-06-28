@@ -38,6 +38,7 @@ class RuleBasedCreditCardBot:
         """Define regex patterns for each top-level JSON key (intent)."""
         return {
             'annual_fee': [r'annual fee', r'joining fee', r'cost', r'price', r'charge'],
+            'foreign_currency_markup_fee': [r'foreign currency', r'fx markup', r'forex fee', r'currency conversion', r'international transaction'],
             'welcome_benefit': [r'welcome benefit', r'joining bonus', r'sign-up offer'],
             'reward_point_structure': [r'reward', r'point', r'earn rate', r'cashback', r'milestone'],
             'mcc_exclusions': [r'mcc', r'merchant code', r'exclusion', r'not eligible', r'not count'],
@@ -125,7 +126,7 @@ I promise I'm usually much more helpful than this! 😅
         context = json.dumps(relevant_data, indent=2)
         
         prompt = f"""
-Answer the following question using the credit card data provided. Be witty, friendly, and concise. Get straight to the point, but with personality. Use 1-2 short paragraphs. Use emojis, but don't overdo it. Avoid long explanations unless absolutely necessary.
+Answer the following question using the credit card data provided. Be friendly, clear, and direct. Get straight to the point. Keep the answer to a single short paragraph. Use emojis sparingly, if at all. Avoid long explanations unless absolutely necessary.
 
 Question: {query}
 
@@ -133,22 +134,21 @@ Relevant Data:
 {context}
 
 Instructions for your response:
-- Be witty, friendly, and concise.
-- Get straight to the point, but with personality.
-- Use 1-2 short paragraphs.
-- Use emojis, but don't overdo it.
-- Avoid long explanations unless absolutely necessary.
+- Be friendly, clear, and direct.
+- Get straight to the point.
+- Keep the answer to a single short paragraph.
+- Use emojis sparingly, if at all.
 
-Provide a short and witty answer based on the data above.
+Provide a clear and direct answer based on the data above.
 """
         
         response = self.client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[
-                {"role": "system", "content": "You are a friendly, knowledgeable credit card expert with a great sense of humor. You are known for giving clear, witty, and concise answers. You explain things like a smart friend who gets straight to the point but still makes it fun."},
+                {"role": "system", "content": "You are a helpful and clear credit card expert. You provide accurate, direct answers in a friendly and professional tone. You avoid excessive humor and get straight to the point."},
                 {"role": "user", "content": prompt}
             ],
-            temperature=0.6,
+            temperature=0.2,
             max_tokens=250
         )
         
