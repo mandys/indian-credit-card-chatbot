@@ -1,55 +1,68 @@
 import streamlit as st
-from utils.qa_engine import get_card_data, get_answer
+from utils.qa_engine import RuleBasedCreditCardBot
 
 st.set_page_config(page_title="Credit Card Q&A", layout="wide")
+
+# Cache the bot instance so it's loaded only once.
+@st.cache_resource
+def get_bot():
+    """Initializes and returns the RuleBasedCreditCardBot."""
+    return RuleBasedCreditCardBot()
 
 def main():
     """Main function to run the Streamlit app."""
     st.title("💳 Indian Credit Card Terms Q&A")
     st.markdown("""
     Ask a question about the terms and conditions of popular Indian credit cards. 
-    This tool uses OpenAI's GPT-4o to understand your question and provide answers from a structured database of card features.
+    This tool uses a fast, rule-based engine for intent detection and **GPT-3.5-Turbo** for answer generation.
     """)
 
-    # Load data once and cache it
-    @st.cache_data
-    def load_data():
-        return get_card_data()
-
-    card_data = load_data()
+    bot = get_bot()
     
-    if not card_data:
+    if not bot.credit_card_data:
         st.error("No card data found. Make sure there are valid JSON files in the 'data/' directory.")
         return
         
     st.sidebar.header("Available Cards")
-    for card_name in card_data.keys():
+    for card_name in bot.credit_card_data.keys():
         st.sidebar.success(card_name)
     
-    st.sidebar.header("Sample Queries")
-    sample_queries = [
-        "What is the annual fee for Axis Atlas?",
-        "Does ICICI EPM give a welcome bonus?",
-        "How many free lounge visits are available for silver tier holders on the Axis Atlas card?",
-        "What are the milestone benefits of the ICICI Emeralde card?",
-        "Which MCCs are excluded from reward points on the ICICI card?"
-    ]
-    for query in sample_queries:
-        if st.sidebar.button(query):
-            st.session_state.question = query
+    st.sidebar.header("Sample Topics")
+    st.sidebar.info("""
+    You can ask about:
+    - Annual or Joining Fees
+    - Welcome Bonuses
+    - Reward Points & Milestones
+    - MCC Exclusions
+    - Lounge Access
+    - Insurance & Other Benefits
+    """)
+
+    # Initialize chat history
+    if "messages" not in st.session_state:
+        st.session_state.messages = [{"role": "assistant", "content": bot.get_greeting()}]
+
+    # Display chat messages from history on app rerun
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+    # Accept user input
+    if prompt := st.chat_input("Ask me anything about these cards..."):
+        # Add user message to chat history
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        # Display user message in chat message container
+        with st.chat_message("user"):
+            st.markdown(prompt)
+
+        # Display assistant response in chat message container
+        with st.chat_message("assistant"):
+            with st.spinner("Thinking..."):
+                response = bot.get_answer(prompt)
+                st.markdown(response)
         
-    # Handle user input
-    if 'question' not in st.session_state:
-        st.session_state.question = "What is the joining fee for ICICI EPM?"
-
-    question = st.text_input("Ask your question:", value=st.session_state.question, key="question_input")
-
-    if question:
-        with st.spinner("Finding the answer..."):
-            answer = get_answer(question, card_data)
-            st.markdown("---")
-            st.header("Answer")
-            st.markdown(answer)
+        # Add assistant response to chat history
+        st.session_state.messages.append({"role": "assistant", "content": response})
 
 if __name__ == "__main__":
     main()
