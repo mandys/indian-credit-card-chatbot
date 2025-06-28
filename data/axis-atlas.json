@@ -1,0 +1,203 @@
+{
+    "card_name": "Axis Bank Atlas Credit Card",
+    "currency": {
+      "name": "EDGE Miles",
+      "value_in_INR": "1 EDGE Mile = INR 1"
+    },
+    "annual_fee": {
+      "amount": 5000,
+      "currency": "INR",
+      "notes": "plus GST"
+    },
+    "welcome_benefit": {
+      "notes": "Applicable only for paid cards",
+      "rules": [
+        {
+          "sourcing_period": "From 20th April 2024 onwards",
+          "description": "2500 bonus EDGE Miles",
+          "condition": "1 transaction within 37 days from card issuance"
+        },
+        {
+          "sourcing_period": "Between 20th December 2022 to 20th April 2024",
+          "description": "5000 bonus EDGE Miles",
+          "condition": "1 transaction within 30 days from card issuance"
+        },
+        {
+          "sourcing_period": "Before 20th December 2022",
+          "description": "5000 bonus EDGE Miles",
+          "condition": "3 transactions within 60 days from card issuance"
+        }
+      ],
+      "credit_time": "Within 7 days from transaction date",
+      "encashable": false
+    },
+    "reward_point_structure": {
+      "common_across_all_tiers": [
+        {
+          "category": "Travel (Axis Bank Travel EDGE Portal, direct airline, direct hotel)",
+          "earn_rate": "5 EDGE Miles per INR 100 spent",
+          "cap": "Up to INR 200,000 cumulative transactions per month",
+          "post_cap_earn_rate": "2 EDGE Miles per INR 100 spent (above INR 200,000 per month on travel)",
+          "exceptions": "Bookings through travel agents (private, corporate, online) earn 2 EDGE Miles per INR 100 spent (base earn).",
+          "credit_time": "Within 12 days from eligible transaction",
+          "encashable": false
+        },
+        {
+          "category": "Other Spends",
+          "earn_rate": "2 EDGE Miles per INR 100 spent (for transactions from 20th Dec 2022 onwards, previously 1 EDGE Mile per INR 100)",
+          "exclusions": [
+            "Airlines",
+            "Hotels",
+            "Axis Bank Travel EDGE Portal (as they earn 5 EDGE Miles)",
+            "Gold/Jewellery (from 20th April 2024)",
+            "Rent (from 20th April 2024)",
+            "Wallet (from 20th April 2024)",
+            "Government Institution (from 20th April 2024)",
+            "Insurance (from 20th April 2024)",
+            "Fuel (from 20th April 2024)",
+            "Utilities and Telecom (from 20th April 2024)"
+          ],
+          "credit_time": "Within 12 days from eligible transaction",
+          "encashable": false
+        }
+      ],
+      "tiered_benefits": [
+        {
+          "benefit_type": "Annual Benefit (upon annual fee payment)",
+          "silver_tier": "No EDGE Miles",
+          "gold_tier": "2500 EDGE Miles",
+          "platinum_tier": "5000 EDGE Miles",
+          "credit_time": "Within 30 days from annual fee payment date",
+          "encashable": false
+        },
+        {
+          "benefit_type": "Milestone Benefit (upon achieving spends)",
+          "spends_milestones": [
+            {"threshold_inr": 300000, "benefit": "2500 EDGE Miles"},
+            {"threshold_inr": 750000, "benefit": "Additional 2500 EDGE Miles"},
+            {"threshold_inr": 1500000, "benefit": "Additional 5000 EDGE Miles"}
+          ],
+          "notes": "Spends done on Primary and add-on cards are eligible.",
+          "exclusions": [
+            "Rent (effective 5th March 2023)",
+            "Wallet (effective 5th March 2023)",
+            "Gold/Jewellery (from 20th April 2024)",
+            "Government Institution (from 20th April 2024)",
+            "Insurance (from 20th April 2024)",
+            "Fuel (from 20th April 2024)",
+            "Utilities and Telecom (from 20th April 2024)"
+          ],
+          "credit_time": "Within 30 days from date when spends were achieved",
+          "encashable": false
+        }
+      ]
+    },
+    "mcc_exclusions": {
+      "tier_evaluation_spend_threshold": [
+        "Gold/Jewellery (from 20th April 2024 onwards)",
+        "Rent (from 20th April 2024 onwards)",
+        "Wallet (from 20th April 2024 onwards)",
+        "Government Institution (from 20th April 2024 onwards)",
+        "Insurance (from 20th April 2024 onwards)",
+        "Fuel (from 20th April 2024 onwards)",
+        "Utilities and Telecom (from 20th April 2024 onwards)"
+      ],
+      "other_spends_earn": [
+        "Gold/Jewellery (from 20th April 2024 onwards)",
+        "Rent (from 20th April 2024 onwards)",
+        "Wallet (from 20th April 2024 onwards)",
+        "Government Institution (from 20th April 2024 onwards)",
+        "Insurance (from 20th April 2024 onwards)",
+        "Fuel (from 20th April 2024 onwards)",
+        "Utilities and Telecom (from 20th April 2024 onwards)"
+      ],
+      "milestone_benefit_spend_threshold": [
+        "Rent (effective 5th March 2023)",
+        "Wallet (effective 5th March 2023)",
+        "Gold/Jewellery (from 20th April 2024 onwards)",
+        "Government Institution (from 20th April 2024 onwards)",
+        "Insurance (from 20th April 2024 onwards)",
+        "Fuel (from 20th April 2024 onwards)",
+        "Utilities and Telecom (from 20th April 2024 onwards)"
+      ]
+    },
+    "tier_details": {
+      "initial_tier": "Silver",
+      "upgrade_thresholds": {
+        "gold_tier": "INR 7.5 lacs in an anniversary year",
+        "platinum_tier": "INR 15 lacs in an anniversary year"
+      },
+      "downgrade_rules": {
+        "silver_from_gold": "If cardholder doesn't achieve INR 7.5 Lacs spend threshold in next anniversary year",
+        "gold_from_platinum": "If cardholder spends >=INR 7.5 Lac & < INR15 Lac in next anniversary year",
+        "silver_from_platinum": "If cardholder spends < INR7.5 Lac in next anniversary year"
+      },
+      "spend_exclusions_for_tier_evaluation": [
+        "Gold/ Jewellery (from 20th April 2024 onwards)",
+        "Rent (from 20th April 2024 onwards)",
+        "Wallet (from 20th April 2024 onwards)",
+        "Government Institution (from 20th April 2024 onwards)",
+        "Insurance (from 20th April 2024 onwards)",
+        "Fuel (from 20th April 2024 onwards)",
+        "Utilities and Telecom (from 20th April 2024 onwards)"
+      ]
+    },
+    "lounge_access": {
+      "domestic": {
+        "policy": [
+            { "tier": "Silver", "access": "8 visits" },
+            { "tier": "Gold", "access": "12 visits" },
+            { "tier": "Platinum", "access": "18 visits" }
+        ]
+      },
+      "international": {
+        "policy": [
+            { "tier": "Silver", "access": "4 visits" },
+            { "tier": "Gold", "access": "6 visits" },
+            { "tier": "Platinum", "access": "12 visits" }
+        ]
+      },
+      "notes": "Includes visits for primary cardholder and guests [22]. Access via Dreamfolks [22]. For domestic lounge access, one can book via Axis Bank mobile app or swipe card (INR 2/- authentication transaction) [22]. For international lounge access, booking via Axis Bank mobile app is required [23]."
+    },
+    "miles_transfer_program": {
+      "base_conversion_rate": "1 EDGE Mile = 2 Partner Points",
+      "special_conversions": [
+        { "partner": "Marriott Bonvoy", "rate": "2 EDGE Miles = 1 Marriott Bonvoy Point" }
+      ],
+      "annual_cap": {
+        "2024": "150,000 EDGE Miles (from 20th April 2024 – 31st December 2024)",
+        "from_2025_onwards": "150,000 EDGE Miles (1st Jan to 31st Dec)"
+      },
+      "group_caps": {
+        "group_a": "Maximum 30,000 EDGE Miles per customer ID cumulatively per calendar year",
+        "group_b": "Maximum 120,000 EDGE Miles per customer ID cumulatively per calendar year"
+      },
+      "partner_list": {
+        "group_a": [
+          "Accor Hotels (Accor Live Limitless)",
+          "Air Canada (Aeroplan)",
+          "Ethiopian Airlines",
+          "Etihad (Etihad Guest)",
+          "Japan Airlines (JAL Mileage Bank)",
+          "Marriott International (Marriott Bonvoy)",
+          "Qatar Airways",
+          "Singapore Airlines (Krisflyer)",
+          "Turkish Airlines",
+          "Thai Airways (Royal Orchid Plus)",
+          "United Airlines (MileagePlus)",
+          "Wyndham Hotels (Wyndham Rewards)"
+        ],
+        "group_b": [
+          "Air France-KLM (Flying Blue)",
+          "Air India (Flying Returns)",
+          "Air Asia",
+          "ITC",
+          "IHG® Hotels & Resorts (IHG One Rewards)",
+          "Qantas Airways (Qantas Frequent Flyer)",
+          "SpiceJet",
+          "Vistara (TATA SIA Airlines Ltd)"
+        ]
+      }
+    },
+    "additional_benefits": {}
+  }

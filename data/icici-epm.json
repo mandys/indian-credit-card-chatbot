@@ -1,0 +1,175 @@
+{
+    "card_name": "ICICI Bank Emeralde Private Metal Credit Card",
+    "annual_fee": {
+      "amount": 12500,
+      "currency": "INR",
+      "notes": "The exact annual fee amount for the ICICI Bank Emeralde Private Metal Credit Card is not specified in the provided sources. However, the card offers annual bonus reward points that are credited upon 'fee realisation' [6a], implying an annual fee is charged."
+    },
+    "welcome_benefit": {
+      "rules": [
+        {
+          "benefit_type": "Taj Epicure Membership",
+          "description": "Complimentary 1-year Taj Epicure Membership with exclusive benefits such as complimentary night stay, discounts, perks, and more [1].",
+          "condition": "This membership is applicable for Primary Cardmembers only and has a 1-year validity from the date of issuance [5a]. It must be redeemed within the validity period mentioned in the voucher code SMS/e-mail received from ICICI Bank [5b].",
+          "sourcing_period": "Joining Benefit [1]",
+          "encashable": false,
+          "notes": "To redeem the membership, visit tajhotels.com/en-in/epicureprogram/bank/icicibank, click 'ENROL NOW', fill in the details, and enter the Voucher Code and Voucher PIN received from ICICI Bank via SMS/e-mail [2]. More details are available on the Taj Hotels website [6c]."
+        },
+        {
+          "benefit_type": "EazyDiner Prime Membership",
+          "description": "Complimentary 12-month EazyDiner Prime Membership [3].",
+          "condition": "The membership is applicable for a Primary Cardmember only, with a 1-year validity from the date of issuance [8a]. It will be renewed subject to the receipt of joining and annual fees on a year-on-year basis [3]. The unique coupon code received from ICICI Bank via SMS/e-mail must be applied during activation [4]. This membership cannot be refunded or claimed in cash [9d].",
+          "sourcing_period": "Joining and Annual benefits [3]",
+          "encashable": false,
+          "notes": "To activate, download the EazyDiner application, sign up or login, select the 12-month plan, and apply the coupon code [4]. Prime deals guarantee a minimum of 25% discount at participating restaurants [9e, 10g]. Not all restaurants on EazyDiner have Prime deals or support PayEazy [5]. '1+1' deals are valid when a minimum of 2 guests are dining [11h]. Offers and restaurants may change dynamically [11i]."
+        },
+        {
+          "benefit_type": "Joining & Annual Bonus Reward Points",
+          "description": "You receive *12,500 ICICI Bank Reward Points* as a Joining and Annual Bonus [6a]. The value of 1 ICICI Bank Reward Point is ₹1 [6a].",
+          "condition": "These points are credited to your Reward Account once every year, *upon 45 days of fee realisation and card activation* [6a].",
+          "sourcing_period": "Annual [6a]",
+          "encashable": true,
+          "notes": "Reward points can be tracked and redeemed via the iMobile application or Internet Banking across various categories, including movie and travel vouchers, lifestyle products, mobiles, and appliances [6b]. Redemption values vary: *₹1 per point* for Flights and Hotel vouchers, and vouchers for specific brands like Apple, Tanishq, and others; *₹0.6 per point* for other products in the Rewards Catalogue; and *₹0.4 per point* for Statement Credit (cashback redemption) [6]. Redemption against outstanding is capped at 50,000 Reward Points per statement cycle [20e]."
+        }
+      ],
+      "credit_time": "The credit time varies by benefit; for bonus reward points, it's upon 45 days of fee realisation and card activation [6a]. Memberships have a 1-year validity from the date of issuance [5a, 8a].",
+      "encashable": "Some benefits are encashable (e.g., Reward Points for statement credit or vouchers) [6], while memberships like EazyDiner Prime cannot be refunded or claimed in cash [9d]."
+    },
+    "reward_point_structure": {
+      "common_across_all_tiers": [
+        {
+          "category": "All eligible retail transactions",
+          "earn_rate": "*6 ICICI Bank Reward Points on every ₹200 spent* [18a]",
+          "cap": "None explicitly mentioned for general retail transactions, but specific categories have caps [7].",
+          "exclusions": "Government services, tax, rent, fuel payments, and transactions converted into EMIs [18c, 19d]."
+        },
+        {
+          "category": "Insurance transactions",
+          "earn_rate": "6 ICICI Bank Reward Points on every ₹200 spent [18a]",
+          "cap": "*Capped at 5,000 Reward Points per statement cycle* [7, 8].",
+          "exclusions": []
+        },
+        {
+          "category": "Grocery transactions",
+          "earn_rate": "6 ICICI Bank Reward Points on every ₹200 spent [18a]",
+          "cap": "*Capped at 1,000 Reward Points per statement cycle* [7, 8].",
+          "exclusions": []
+        },
+        {
+          "category": "Utility transactions",
+          "earn_rate": "6 ICICI Bank Reward Points on every ₹200 spent [18a]",
+          "cap": "*Capped at 1,000 Reward Points per statement cycle* [7, 9].",
+          "exclusions": []
+        },
+        {
+          "category": "Education transactions",
+          "earn_rate": "6 ICICI Bank Reward Points on every ₹200 spent [18a]",
+          "cap": "*Capped at 1,000 Reward Points per statement cycle* [7, 9].",
+          "exclusions": []
+        }
+      ],
+      "tiered_benefits": [
+        {
+          "benefit_type": "Milestone - EaseMyTrip Air-Travel Vouchers",
+          "spends_milestones": [
+            {
+              "threshold_inr": 400000,
+              "benefit": "₹3,000 EaseMyTrip voucher",
+              "notes": "The 1st EaseMyTrip voucher is received on spending ₹4 lakh in an anniversary year [13b]."
+            },
+            {
+              "threshold_inr": 800000,
+              "benefit": "₹3,000 EaseMyTrip voucher",
+              "notes": "The 2nd EaseMyTrip voucher is received on reaching spends of ₹8 lakh in an anniversary year [13b]."
+            }
+          ],
+          "total_value": "*₹6,000 (Two vouchers worth ₹3,000 each)* [13a]",
+          "conditions": "These vouchers are applicable for Primary Cardmembers only within the validity period mentioned in the voucher code SMS/e-mail [14a]. They are valid for Easemytrip.com flight bookings only [14b] and for a one-time transaction [14c]. Vouchers are non-cumulative [14d]. They cannot be clubbed with any other ongoing offer, discount, cashback, or promotion run by EaseMyTrip.com [15h]. If a purchase is less than the voucher value, the balance voucher amount is forfeited [15j]. In case of cancellations, the voucher amount will not be refunded [17p]."
+        }
+      ]
+    },
+    "mcc_exclusions": {
+      "tier_evaluation_spend_threshold": [],
+      "other_spends_earn": [
+        "*Government Services* (Merchant Category Codes: 9405 - Intra-Government Purchases, 9222 - Fines, 9399 - Government payments, 9402 - Postal Services, 9211 - Court cost) [10, 11].",
+        "*Tax* (Merchant Category Codes: 7276 - Tax Preparation Services, 9311 - Tax payments) [10, 11].",
+        "*Rent* (Merchant Category Code: 6513 - Real Estate Agents and Managers) [10, 11].",
+        "*Fuel payments* (Merchant Category Codes: 5541 – Service Stations, 5542 – Automated Fuel Dispensers) [10, 11].",
+        "*Transactions converted into EMIs* [19d]."
+      ]
+    },
+    "tier_details": {
+      "upgrade_thresholds": {},
+      "notes": "The provided sources describe benefits for a single card product, the 'ICICI Bank Emeralde Private Metal Credit Card' [12]. They do not indicate different tiers (e.g., Gold, Platinum) within this specific card program itself, nor do they specify any upgrade thresholds for such tiers."
+    },
+    "lounge_access": {
+      "domestic": {
+        "policy": [
+            { "tier": "default", "access": "*Unlimited complimentary lounge access* for Primary and Add-on Cardmembers within India [13]." }
+        ],
+        "notes": "Access is availed by swiping your Emeralde Private Metal Credit Card [13]."
+      },
+      "international": {
+        "policy": [
+            { "tier": "default", "access": "*Unlimited International Lounge access* with Priority Pass Membership for Primary Cardmembers and Add-on Cardmembers [24a]." }
+        ],
+        "notes": "Guest visits using the Priority Pass will be charged at *USD 29 + GST per visit per guest* [25e]. Presentation of the Priority Pass Card at the participating airport lounge is mandatory to avail access [25d]."
+      }
+    },
+    "miles_transfer_program": {
+      "conversion_rate": "Not specified in the provided sources for a direct 'miles transfer program'. The sources indicate that ICICI Bank Reward Points can be redeemed for flights and hotel vouchers at a value of ₹1 per point, or other products/statement credit at different rates [6].",
+      "annual_cap": "Not specified.",
+      "partner_list": {},
+      "notes": "The sources describe various redemption options for reward points but do not explicitly mention a direct 'miles transfer program' to airline or hotel loyalty partners [6b, 23]."
+    },
+    "effective_dates_for_rule_changes": "No specific effective dates for rule changes or policy updates are mentioned in the provided sources.",
+    "additional_benefits": {
+      "fuel_transaction_waiver": "A *1% fuel surcharge waiver* is applicable on all fuel transactions, with a *maximum waiver of ₹1,000 per statement cycle* [23a, 23b].",
+      "cancellation_charges_waiver": {
+        "benefit": "*No cancellation charges on Air Travel, Hotel, and Movie Bookings* [13].",
+        "indemnification_limit": "The Maximum Indemnification Limit is *₹12,000 per transaction and per card* [30e, 30f].",
+        "coverage_details": "Coverage is applicable for the *first two cancellations* (Domestic flight/Hotel/Movie) [30g]. It is valid only for Primary Cardmember's tickets/bookings made using the Primary Emeralde Private Metal Credit Card for his/her trip/stay [29a]. Coverage applies to the *Non–Refundable amount, excluding any convenience charges or other costs apart from the ticket cost [30c, 30d]. This feature is applicable for bookings in India only [30h] and provides coverage **up to 24 hours before the travel/stay date* [31j]. It is applicable for 4-Star/5-Star hotels [31k].",
+        "claim_process": "The Cardmember lodges a claim through the Call Centre (*1800-2666) or via E-mail (ihealthcare@icicilombard.com) [27a]. Claim intimation to the Bank should be made within **60 days from the date of incidence* [31l]. ICICI Lombard will take *14 days* to process the claim once all required documents have been received [28f]. Necessary details for claim intimation via e-mail include Policy number (049/360034748/00/000), Insured Name, Date of Loss (DOL), Nature of Loss (NOL), Nominee address, e-mail ID, and mobile number [14]."
+      },
+      "bookmyshow_offer": "You can *buy one ticket and get up to ₹750 off on the second ticket, applicable up to **2 times in a month*, on movies, sport events, theatre, or concert tickets booked through BookMyShow [32a].",
+      "golf_games": {
+        "access_limit": "*Unlimited complimentary Golf games* are available for primary Cardmembers only [32a, 32b].",
+        "booking_method": "Bookings can be made by creating a Golftripz Account at https://teetimes.golftripz.com/ using the same e-mail ID registered with ICICI Bank Credit Cards [32b]. Alternatively, you can call i-Assist concierge service at *1800 26 70731* (toll-free for MTNL/BSNL) or *022 6787 2016* (standard call charges applicable) for assistance with online booking [33e].",
+        "conditions": "Complimentary rounds are visible in the Golftripz Account after the 10th day of the next month and are available for play anytime in the next 2 months [33c]. Bookings for a specific tee-off date open exactly 15 days prior and close 5 days prior to the tee-off date [34f]. Only one open booking request (pending/confirmed) is allowed at any point in time [34h]. The green fee is complimentary, courtesy ICICI Bank [38p]. Charges for the caddy and buggy must be borne by the Cardmember [38p]. Cancellations need to be made at least *6 days prior to tee time, and a **cancellation charge of ₹500* will be applicable [38q]. Some golf courses may not allow cancellation [38q]. In case of cancellation after the stipulated time, one slot will be deducted from the complimentary slots allotted to the Cardmember [38q].",
+        "notes": "Cardmembers can invite friends or guests, but their charges must be borne by the Cardmember [36l, 36m]. Most golf courses have a mandatory requirement of a handicap certificate [39r]."
+      },
+      "comprehensive_insurance_cover": {
+        "coverage_types_and_amounts": [
+          {"cover": "Personal Accident due to Air Accident (Death only)", "amount": "*₹3,00,00,000* [15]"},
+          {"cover": "Purchase Protection", "amount": "*₹1,40,000* [15]"},
+          {"cover": "Credit Shield", "amount": "*₹1,00,000* [15]"},
+          {"cover": "Loss of checked-in baggage", "amount": "*₹84,000* [15]"},
+          {"cover": "Plane Hijacking", "amount": "*₹75,000* [15]"},
+          {"cover": "Card Liability Cover (Lost Card Liability, Counterfeit/Skimming/Phishing and Online Fraud Protection)", "amount": "*₹50,000* [15, 16]"},
+          {"cover": "Medical expenses for bodily injury caused by and arising out of Rail/Road accident", "amount": "*₹50,000* [16]"},
+          {"cover": "Loss of Passport and travel related documents", "amount": "*₹35,000* [16]"},
+          {"cover": "Baggage Insurance", "amount": "*₹25,000* [16]"},
+          {"cover": "Delay of checked-in baggage", "amount": "*₹21,000* [16]"},
+          {"cover": "Missing a Connecting International Flight during transit", "amount": "*₹21,000* [16]"},
+          {"cover": "Delay in flight", "amount": "*₹17,500* [16]"}
+        ],
+        "conditions": "All insurance benefits are applicable only if the ICICI Bank Emeralde Private Metal Credit Card has been used at least once in the last *60 days prior to the event* [16]. Benefits are available on the Primary Card only, with no insurance cover on Supplementary Cards [16]. The minimum amount due on your Credit Card must be paid at all times to avail insurance benefits [16]. The cover is applicable for *International travel only* and only when the tickets are purchased on the ICICI Bank Emeralde Private Metal Credit Cards [16]. An 'Active Card' (defined as a card with one transaction/activity on any ATM/POS/e-commerce terminal in the last *90 days* from the date of loss) is required [41b]. All cards must have Chip and PIN technology [41c].",
+        "claim_process": "The customer lodges a claim through the Call Centre (*1800-2666) or via E-mail (ihealthcare@icicilombard.com) [17]. Claim documents must be submitted within **60 days from the date of intimation to ICICI Lombard* [41d]. ICICI Lombard will take *14 days* to process the claim once all documents are received [18]. Necessary details for claim intimation via e-mail include Policy Number (4049/318159411/00/000), Insured Name, Date of Loss (DOL), Nature of Loss (NOL), Nominee address, e-mail ID, and mobile number [18, 19].",
+        "notes": "Insurance is provided by ICICI Lombard General Insurance Company Limited under group policies issued to ICICI Bank for its Cardholders [17]. ICICI Bank is not responsible for processing of claims; all claim related queries should be taken up directly with ICICI Lombard [20]."
+      },
+      "concierge_services": {
+        "provider": "i-Assist, a *24x7 concierge service* [20].",
+        "services_offered": [
+          "Restaurant referral and reservation [21]",
+          "Flower and gift assistance [21]",
+          "Flight referral and reservation [21]",
+          "Hotel referral and reservation [21]",
+          "Car rental and Limousine service [21]",
+          "Booking and delivery of movie tickets (currently available in New Delhi, Mumbai, Bengaluru, and Chennai) [21]",
+          "Medical concierge privileges, including arranging air and/or surface transportation for medical care, and connecting with physicians, hospitals, clinics, dentists [21].",
+          "Emergency auto assistance (available in New Delhi, Mumbai, Kolkata, Hyderabad, Bengaluru, and Chennai), including towing, repair, and alternative travel assistance [22]."
+        ],
+        "contact_information": "To contact the i-Assist team, call *1800 26 70731* (Toll-free for MTNL/BSNL) or *022 6787 2016* (Standard call charges applicable) [22]."
+      }
+    }
+  }
