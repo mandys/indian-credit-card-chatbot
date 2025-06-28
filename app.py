@@ -1,7 +1,11 @@
 import streamlit as st
 from utils.qa_engine import RuleBasedCreditCardBot
 
-st.set_page_config(page_title="Credit Card Q&A", layout="wide")
+st.set_page_config(
+    page_title="Credit Card Q&A",
+    layout="centered",
+    initial_sidebar_state="collapsed"
+)
 
 # Cache the bot instance so it's loaded only once.
 @st.cache_resource
@@ -11,11 +15,8 @@ def get_bot():
 
 def main():
     """Main function to run the Streamlit app."""
-    st.title("💳 Indian Credit Card Terms Q&A")
-    st.markdown("""
-    Ask a question about the terms and conditions of popular Indian credit cards. 
-    This tool uses a fast, rule-based engine for intent detection and **GPT-3.5-Turbo** for answer generation.
-    """)
+    st.title("💳 Indian Credit Card Q&A")
+    st.markdown("Your friendly AI assistant for Indian credit card questions.")
 
     bot = get_bot()
     
@@ -23,20 +24,21 @@ def main():
         st.error("No card data found. Make sure there are valid JSON files in the 'data/' directory.")
         return
         
-    st.sidebar.header("Available Cards")
-    for card_name in bot.credit_card_data.keys():
-        st.sidebar.success(card_name)
-    
-    st.sidebar.header("Sample Topics")
-    st.sidebar.info("""
-    You can ask about:
-    - Annual or Joining Fees
-    - Welcome Bonuses
-    - Reward Points & Milestones
-    - MCC Exclusions
-    - Lounge Access
-    - Insurance & Other Benefits
-    """)
+    with st.expander("See Available Cards & Sample Topics"):
+        st.subheader("Available Cards")
+        for card_name in bot.credit_card_data.keys():
+            st.success(card_name)
+        
+        st.subheader("Sample Topics")
+        st.info("""
+        You can ask about:
+        - Annual or Joining Fees
+        - Welcome Bonuses
+        - Reward Points & Milestones
+        - MCC Exclusions
+        - Lounge Access
+        - Insurance & Other Benefits
+        """)
 
     # Initialize chat history
     if "messages" not in st.session_state:
