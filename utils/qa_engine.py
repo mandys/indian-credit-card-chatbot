@@ -19,19 +19,26 @@ class RichDataCreditCardBot:
     def _load_credit_card_data(self, data_files: list[str]):
         """Loads all credit card data from the provided list of files into a structured format."""
         self.cards_data: Dict[str, Dict[str, Any]] = {}
-        self.common_terms: Dict[str, Any] = {}
+        self.bank_common_terms: Dict[str, Dict[str, Any]] = {}  # Store common terms per bank
         self.card_name_map: Dict[str, str] = {}
         
         for filepath in data_files:
             try:
                 with open(filepath, 'r') as f:
                     data = json.load(f)
+                    
+                    # Determine bank name from file path
+                    bank_name = filepath.split('/')[-1].split('-')[0]  # e.g., 'axis' from 'axis-atlas.json'
+                    
                     if "common_terms" in data:
-                        self.common_terms.update(data["common_terms"])
+                        self.bank_common_terms[bank_name] = data["common_terms"]
+                        
                     if "cards" in data and isinstance(data["cards"], list):
                         for card in data["cards"]:
                             card_name = card.get("name")
                             if card_name:
+                                # Store the bank name with the card for later reference
+                                card["_bank"] = bank_name
                                 self.cards_data[card_name] = card
                                 self.card_name_map[card_name] = self._generate_keywords(card_name)
             except FileNotFoundError:
@@ -45,8 +52,10 @@ class RichDataCreditCardBot:
 
     def _setup_intent_patterns(self):
         """Define regex patterns for each potential intent."""
-        # Consolidate all possible keys from cards and common terms
-        all_keys = set(self.common_terms.keys())
+        # Consolidate all possible keys from cards and bank common terms
+        all_keys = set()
+        for bank_terms in self.bank_common_terms.values():
+            all_keys.update(bank_terms.keys())
         for card in self.cards_data.values():
             all_keys.update(card.keys())
 
@@ -100,7 +109,30 @@ class RichDataCreditCardBot:
            re.search(r'better.*reward.*\d+', query_lower):
             return 'reward_comparison'
         
+        # Check for specific spending categories first (more specific than general fees)
+        spending_category_checks = {
+            'utilities': [r'utilit(y|ies)', r'utility.*spend', r'utility.*charge', r'utility.*fee'],
+            'fuel': [r'fuel', r'petrol', r'gas station'],
+            'rent': [r'rent', r'rental'],
+            'education': [r'education', r'school', r'college', r'university'],
+            'insurance': [r'insurance'],
+            'government': [r'government', r'govt', r'tax payment'],
+            'gaming': [r'gaming', r'game'],
+            'wallet': [r'wallet', r'paytm', r'phonepe', r'gpay'],
+            'gold': [r'gold', r'jewellery', r'jewelry']
+        }
+        
+        for category, patterns in spending_category_checks.items():
+            for pattern in patterns:
+                if re.search(pattern, query_lower):
+                    return category
+        
+        # Then check for other intents
         for intent, patterns in self.intent_patterns.items():
+            # Skip spending categories as we already checked them above
+            if intent in spending_category_checks:
+                continue
+                
             for pattern in patterns:
                 if re.search(pattern, query_lower):
                     # This maps a human-friendly key back to the actual JSON key
@@ -194,11 +226,16 @@ class RichDataCreditCardBot:
                 if name in self.cards_data:
                     card_info = self.cards_data[name]
                     card_context = {}
-                    # Check for surcharges in common terms
-                    if 'surcharge_fees' in self.common_terms:
-                        surcharge_key = intent.replace('_', ' ')
-                        if surcharge_key in self.common_terms['surcharge_fees']:
-                            card_context['surcharge_info'] = {surcharge_key: self.common_terms['surcharge_fees'][surcharge_key]}
+                    
+                    # Get the bank for this card and use its common terms
+                    bank = card_info.get('_bank')
+                    if bank and bank in self.bank_common_terms:
+                        bank_terms = self.bank_common_terms[bank]
+                        # Check for surcharges in bank-specific common terms
+                        if 'surcharge_fees' in bank_terms:
+                            surcharge_key = intent  # Use intent directly since we're looking for 'utilities', not 'utilities '
+                            if surcharge_key in bank_terms['surcharge_fees']:
+                                card_context['surcharge_info'] = {surcharge_key: bank_terms['surcharge_fees'][surcharge_key]}
                     # Check for rewards and their exclusions
                     if 'rewards' in card_info:
                         card_context['rewards_info'] = {
@@ -212,9 +249,11 @@ class RichDataCreditCardBot:
                     context[name] = card_context
             return context
 
-        # Fallback to original logic for other intents
-        if intent and intent in self.common_terms:
-            return {"common_terms": {intent: self.common_terms[intent]}}
+        # Fallback to original logic for other intents - check all banks' common terms
+        if intent:
+            for bank, bank_terms in self.bank_common_terms.items():
+                if intent in bank_terms:
+                    return {"common_terms": {intent: bank_terms[intent]}}
 
         if card_names:
             context = {}
@@ -283,12 +322,17 @@ class RichDataCreditCardBot:
 You are a credit card expert. A user is asking about a specific spending category: '{intent}'.
 Your task is to answer their question based ONLY on the provided JSON data.
 
-- If the data contains an "exclusions" list and the user's category ('{intent}') is mentioned there, you MUST clarify the following:
-    1. The user *can* still make the transaction with their card.
-    2. However, they will *not* earn any rewards, points, or benefits for that transaction because it is an excluded category.
-- If the category is NOT in the exclusions list, confirm that they will earn the standard rewards.
-- Do not invent information. If the data is missing, say so.
-- Keep the answer helpful, clear, and concise.
+IMPORTANT: Address BOTH fees AND rewards in your response:
+
+1. FEES/CHARGES: If there's surcharge_info in the data, mention any fees or charges for this category.
+
+2. REWARDS: 
+   - Check if the category appears in any exclusions list (like 'categories' under spend_exclusion_policy)
+   - If the category IS in exclusions: User can make the transaction but will NOT earn rewards/points
+   - If the category is NOT in exclusions: User will earn the standard rewards/points
+
+Be specific about amounts, thresholds, and conditions. Keep the answer helpful, clear, and concise.
+Do not invent information. If the data is missing, say so.
 """
         elif intent == 'reward_comparison':
             system_prompt = """
@@ -296,6 +340,27 @@ You are a credit card expert specializing in reward comparisons.
 Help users understand which card gives better rewards for their spending.
 Use the provided data to make accurate calculations and comparisons.
 Show your work clearly with calculations.
+"""
+        elif intent == 'rewards':
+            system_prompt = """
+You are a credit card expert answering questions about reward rates and earning patterns.
+
+CRITICAL RULES FOR REWARD RATES:
+1. Answer ONLY based on the provided JSON data
+2. ALWAYS prioritize specific category rates over general rates
+3. When user asks about a specific spending category (hotels, travel, dining, etc.):
+   - First check if there's a specific section for that category (e.g., "travel", "dining")
+   - If the category appears in a specific section, use THAT rate
+   - Only use "others" rate if no specific category rate exists
+4. Be specific about caps, limits, and conditions
+5. If there are multiple tiers or caps, explain them clearly
+
+EXAMPLE HIERARCHY:
+- If user asks about "hotel spends" and there's a "travel" section with "Direct Hotels" → use the travel rate
+- If user asks about "dining" and there's a "dining" section → use the dining rate  
+- Only use "others" rate for general spends or categories not specifically mentioned
+
+Be helpful but strictly factual based only on the provided data.
 """
         elif intent == 'miles_transfer':
             system_prompt = """
