@@ -57,6 +57,7 @@ class RichDataCreditCardBot:
             'fees': [r'fee', r'charge', r'cost', r'price'],
             'welcome_benefits': [r'welcome', r'joining bonus', r'sign-up'],
             'rewards': [r'reward', r'point', r'earn rate', r'cashback'],
+            'reward_comparison': [r'which card.*more reward', r'which.*better reward', r'compare reward', r'more reward', r'better reward', r'which card.*spend.*reward', r'reward.*comparison'],
             'milestones': [r'milestone'],
             'tier_structure': [r'tier', r'status', 'level'],
             'lounge_access': [r'lounge', r'airport'],
@@ -88,6 +89,17 @@ class RichDataCreditCardBot:
     def detect_intent(self, query: str) -> Optional[str]:
         """Detect intent using regex pattern matching."""
         query_lower = query.lower()
+        
+        # Check for reward comparison queries first (more specific)
+        if re.search(r'which.*card.*(more|better).*reward', query_lower) or \
+           re.search(r'(compare|comparison).*reward', query_lower) or \
+           re.search(r'spend.*\d+.*which.*card', query_lower) or \
+           re.search(r'spend.*\d+.*(vs|versus)', query_lower) or \
+           re.search(r'(icici|axis|atlas|emeralde).*(vs|versus).*(icici|axis|atlas|emeralde)', query_lower) or \
+           re.search(r'which.*better.*spend.*\d+', query_lower) or \
+           re.search(r'better.*reward.*\d+', query_lower):
+            return 'reward_comparison'
+        
         for intent, patterns in self.intent_patterns.items():
             for pattern in patterns:
                 if re.search(pattern, query_lower):
@@ -114,8 +126,67 @@ class RichDataCreditCardBot:
         greetings = ['hello', 'hi', 'hey']
         return any(greeting in query.lower() for greeting in greetings) and len(query.split()) <= 2
 
+    def extract_spend_amount(self, query: str) -> Optional[int]:
+        """Extract spend amount from query."""
+        import re
+        # Look for numbers in the query
+        numbers = re.findall(r'\d+', query)
+        if numbers:
+            # Take the largest number as the spend amount
+            return max(int(num) for num in numbers)
+        return None
+
+    def calculate_rewards(self, card_name: str, spend_amount: int) -> Dict:
+        """Calculate rewards for a specific card and spend amount."""
+        if card_name not in self.cards_data:
+            return {"error": f"Card {card_name} not found"}
+        
+        card_info = self.cards_data[card_name]
+        
+        # Handle ICICI Emeralde Private Metal
+        if "ICICI" in card_name and "Emeralde" in card_name:
+            # ICICI: 6 points per ₹200 spent
+            points = (spend_amount // 200) * 6
+            return {
+                "card": card_name,
+                "spend_amount": spend_amount,
+                "points_earned": points,
+                "rate": "6 points per ₹200",
+                "calculation": f"₹{spend_amount} ÷ 200 × 6 = {points} points"
+            }
+        
+        # Handle Axis Atlas
+        elif "Axis" in card_name and "Atlas" in card_name:
+            # Atlas: 2 EDGE Miles per ₹100 for general spend
+            miles = (spend_amount // 100) * 2
+            return {
+                "card": card_name,
+                "spend_amount": spend_amount,
+                "miles_earned": miles,
+                "rate": "2 EDGE Miles per ₹100",
+                "calculation": f"₹{spend_amount} ÷ 100 × 2 = {miles} miles"
+            }
+        
+        return {"error": f"Reward calculation not implemented for {card_name}"}
+
     def get_relevant_data(self, intent: Optional[str], card_names: List[str]) -> Dict:
         """Get relevant data based on the new nested structure, handling spend categories intelligently."""
+        # Handle reward comparison queries
+        if intent == 'reward_comparison':
+            context = {}
+            # If no specific cards mentioned, compare all available cards
+            if not card_names:
+                card_names = list(self.cards_data.keys())
+            
+            for name in card_names:
+                if name in self.cards_data:
+                    card_info = self.cards_data[name]
+                    context[name] = {
+                        'rewards': card_info.get('rewards', {}),
+                        'name': name
+                    }
+            return context
+        
         # If the intent is a spend category, gather a comprehensive context.
         if intent and intent.replace('_', ' ') in self.spend_category_intents and card_names:
             context = {}
@@ -162,6 +233,48 @@ class RichDataCreditCardBot:
         """
         Generates an answer using OpenAI API based on the relevant data.
         """
+        # Handle reward comparison queries with calculations
+        if intent == 'reward_comparison':
+            spend_amount = self.extract_spend_amount(query)
+            if spend_amount and relevant_data:
+                calculations = []
+                for card_name in relevant_data.keys():
+                    calc_result = self.calculate_rewards(card_name, spend_amount)
+                    if 'error' not in calc_result:
+                        calculations.append(calc_result)
+                
+                if calculations:
+                    # Create a detailed comparison
+                    comparison_text = f"For spending ₹{spend_amount:,}:\n\n"
+                    
+                    for calc in calculations:
+                        if 'points_earned' in calc:
+                            comparison_text += f"**{calc['card']}**: {calc['points_earned']} points\n"
+                            comparison_text += f"- Rate: {calc['rate']}\n"
+                            comparison_text += f"- Calculation: {calc['calculation']}\n\n"
+                        elif 'miles_earned' in calc:
+                            comparison_text += f"**{calc['card']}**: {calc['miles_earned']} miles\n"
+                            comparison_text += f"- Rate: {calc['rate']}\n"
+                            comparison_text += f"- Calculation: {calc['calculation']}\n\n"
+                    
+                    # Determine winner
+                    if len(calculations) >= 2:
+                        icici_points = next((c['points_earned'] for c in calculations if 'points_earned' in c), 0)
+                        atlas_miles = next((c['miles_earned'] for c in calculations if 'miles_earned' in c), 0)
+                        
+                        if icici_points > atlas_miles:
+                            comparison_text += f"**Winner**: ICICI Emeralde gives you more rewards ({icici_points} points vs {atlas_miles} miles)"
+                        elif atlas_miles > icici_points:
+                            comparison_text += f"**Winner**: Axis Atlas gives you more rewards ({atlas_miles} miles vs {icici_points} points)"
+                        else:
+                            comparison_text += "**Result**: Both cards give similar reward value"
+                    
+                    return comparison_text
+                else:
+                    return "I couldn't calculate rewards for the specified cards. Please make sure you're asking about supported cards."
+            else:
+                return "Please specify a spend amount to compare rewards (e.g., 'If I spend ₹100,000 which card gives more rewards?')"
+        
         context = json.dumps(relevant_data, indent=2)
 
         # Define two separate prompts based on the intent
@@ -176,6 +289,13 @@ Your task is to answer their question based ONLY on the provided JSON data.
 - If the category is NOT in the exclusions list, confirm that they will earn the standard rewards.
 - Do not invent information. If the data is missing, say so.
 - Keep the answer helpful, clear, and concise.
+"""
+        elif intent == 'reward_comparison':
+            system_prompt = """
+You are a credit card expert specializing in reward comparisons. 
+Help users understand which card gives better rewards for their spending.
+Use the provided data to make accurate calculations and comparisons.
+Show your work clearly with calculations.
 """
         else:
             system_prompt = """
