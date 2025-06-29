@@ -246,11 +246,23 @@ class RichDataCreditCardBot:
                             exclusions = rewards['spend_exclusion_policy']
                         elif 'accrual_exclusions' in rewards:
                             exclusions = rewards['accrual_exclusions']
-                            
-                        card_context['rewards_info'] = {
+                        
+                        # Include comprehensive reward information for spending categories
+                        reward_info = {
                             'base_rate': rewards.get('others'),
+                            'general_rate': rewards.get('rate_general'),
+                            'value_per_point': rewards.get('value_per_point'),
                             'exclusions': exclusions
                         }
+                        
+                        # Include category-specific caps if they exist
+                        if 'capping_per_statement_cycle' in rewards:
+                            caps = rewards['capping_per_statement_cycle']
+                            if intent in caps:
+                                reward_info['category_cap'] = caps[intent]
+                            reward_info['all_caps'] = caps
+                            
+                        card_context['rewards_info'] = reward_info
                     # Check for milestone eligibility exclusions
                     if 'milestone_eligibility' in card_info:
                         card_context['milestone_eligibility_exclusions'] = card_info['milestone_eligibility'].get('spend_exclusion_policies')
@@ -340,9 +352,15 @@ IMPORTANT: Address BOTH fees AND rewards in your response:
      * For Axis cards: look in 'categories' under spend_exclusion_policy 
      * For ICICI cards: look in accrual_exclusions array
    - If the category IS in exclusions: User can make the transaction but will NOT earn rewards/points
-   - If the category is NOT in exclusions: User will earn the standard rewards/points
+   - If the category is NOT in exclusions: 
+     * Use general_rate (e.g., "6 points per ₹200") if available
+     * Check for category_cap (specific monthly/cycle limits for this category)
+     * Mention value_per_point if available
+     * Be specific about earning rates and caps
 
-Be specific about amounts, thresholds, and conditions. Keep the answer helpful, clear, and concise.
+3. CAPS & LIMITS: If there's a category_cap, mention the specific limit for this spending category.
+
+Be specific about amounts, thresholds, and conditions. Include earning rates, caps, and point values.
 Do not invent information. If the data is missing, say so.
 """
         elif intent == 'reward_comparison':
