@@ -1,67 +1,53 @@
 import streamlit as st
-from utils.qa_engine import RuleBasedCreditCardBot
+from utils.qa_engine import RichDataCreditCardBot
 
+# Page configuration
 st.set_page_config(
-    page_title="Credit Card Q&A",
+    page_title="Credit Card Benefits Chatbot",
+    page_icon="💳",
     layout="centered",
     initial_sidebar_state="collapsed"
 )
 
-# Cache the bot instance so it's loaded only once.
+# Initialize the bot with both data files
 @st.cache_resource
-def get_bot():
-    """Initializes and returns the RuleBasedCreditCardBot."""
-    return RuleBasedCreditCardBot()
+def load_bot():
+    """Loads the credit card bot."""
+    return RichDataCreditCardBot(data_files=["data/axis-atlas.json", "data/icici-epm.json"])
+
+bot = load_bot()
 
 def main():
     """Main function to run the Streamlit app."""
-    st.title("💳 Indian Credit Card Q&A")
-    st.markdown("Your friendly AI assistant for Indian credit card questions.")
-
-    bot = get_bot()
-    
-    if not bot.credit_card_data:
-        st.error("No card data found. Make sure there are valid JSON files in the 'data/' directory.")
-        return
-        
-    with st.expander("See Available Cards & Sample Topics"):
-        st.subheader("Available Cards")
-        for card_name in bot.credit_card_data.keys():
-            st.success(card_name)
-        
-        st.subheader("Sample Topics")
-        st.info("""
-        You can ask about:
-        - Annual or Joining Fees
-        - Welcome Bonuses
-        - Reward Points & Milestones
-        - MCC Exclusions
-        - Lounge Access
-        - Insurance & Other Benefits
-        """)
+    st.title("💳 Credit Card Benefits Chatbot")
 
     # Initialize chat history
     if "messages" not in st.session_state:
-        st.session_state.messages = [{"role": "assistant", "content": bot.get_greeting()}]
+        st.session_state.messages = []
+        # Add initial welcome message
+        welcome_msg = "Welcome! Ask me anything about the Axis Atlas or ICICI Emeralde Private Metal credit cards."
+        st.session_state.messages.append({"role": "assistant", "content": welcome_msg})
+
 
     # Display chat messages from history on app rerun
     for message in st.session_state.messages:
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
 
-    # Accept user input
-    if prompt := st.chat_input("Ask me anything about these cards..."):
+    # React to user input
+    if prompt := st.chat_input("What would you like to know?"):
+        # Display user message in chat message container
+        st.chat_message("user").markdown(prompt)
         # Add user message to chat history
         st.session_state.messages.append({"role": "user", "content": prompt})
-        # Display user message in chat message container
-        with st.chat_message("user"):
-            st.markdown(prompt)
 
+        # Get assistant response
+        with st.spinner("Thinking..."):
+            response = bot.get_answer(prompt)
+        
         # Display assistant response in chat message container
         with st.chat_message("assistant"):
-            with st.spinner("Thinking..."):
-                response = bot.get_answer(prompt)
-                st.markdown(response)
+            st.markdown(response)
         
         # Add assistant response to chat history
         st.session_state.messages.append({"role": "assistant", "content": response})
