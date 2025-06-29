@@ -354,11 +354,17 @@ IMPORTANT: Address BOTH fees AND rewards in your response:
    - If the category IS in exclusions: User can make the transaction but will NOT earn rewards/points
    - If the category is NOT in exclusions: 
      * Use general_rate (e.g., "6 points per ₹200") if available
-     * Check for category_cap (specific monthly/cycle limits for this category)
+     * Calculate total points based on spend amount
+     * ALWAYS check for category_cap and apply it as the maximum limit
      * Mention value_per_point if available
-     * Be specific about earning rates and caps
 
-3. CAPS & LIMITS: If there's a category_cap, mention the specific limit for this spending category.
+3. CALCULATION LOGIC:
+   - Step 1: Calculate theoretical points (spend ÷ rate × points)
+   - Step 2: Check if category_cap exists for this spending category
+   - Step 3: If cap exists, the FINAL answer is the LOWER of calculated points OR cap
+   - Step 4: Clearly state both the calculated amount and the capped amount
+
+4. ALWAYS mention caps when they exist, even for small amounts that don't hit the cap.
 
 Be specific about amounts, thresholds, and conditions. Include earning rates, caps, and point values.
 Do not invent information. If the data is missing, say so.
