@@ -52,7 +52,7 @@ You can ask things like:
 
 3.  **Install the required dependencies:**
     ```bash
-    pip install -r requirements.txt
+   pip install -r requirements.txt
     ```
 
 4.  **Add your OpenAI API Key:**
@@ -63,7 +63,7 @@ You can ask things like:
 
 5.  **Run the application:**
     ```bash
-    streamlit run app.py
+   streamlit run app.py
     ```
 
 ## ➕ How to Add New Cards
