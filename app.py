@@ -12,6 +12,11 @@ st.set_page_config(
 # Custom CSS for mobile optimization and blue design
 st.markdown("""
 <style>
+    /* Hide Streamlit branding elements */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
+    
     /* Override Streamlit's default padding more aggressively */
     .main .block-container {
         padding-top: 0.2rem !important;
