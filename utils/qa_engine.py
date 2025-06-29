@@ -238,9 +238,18 @@ class RichDataCreditCardBot:
                                 card_context['surcharge_info'] = {surcharge_key: bank_terms['surcharge_fees'][surcharge_key]}
                     # Check for rewards and their exclusions
                     if 'rewards' in card_info:
+                        rewards = card_info['rewards']
+                        exclusions = None
+                        
+                        # Check for exclusions in different formats
+                        if 'spend_exclusion_policy' in rewards:
+                            exclusions = rewards['spend_exclusion_policy']
+                        elif 'accrual_exclusions' in rewards:
+                            exclusions = rewards['accrual_exclusions']
+                            
                         card_context['rewards_info'] = {
-                            'base_rate': card_info['rewards'].get('others'),
-                            'exclusions': card_info['rewards'].get('spend_exclusion_policy')
+                            'base_rate': rewards.get('others'),
+                            'exclusions': exclusions
                         }
                     # Check for milestone eligibility exclusions
                     if 'milestone_eligibility' in card_info:
@@ -327,7 +336,9 @@ IMPORTANT: Address BOTH fees AND rewards in your response:
 1. FEES/CHARGES: If there's surcharge_info in the data, mention any fees or charges for this category.
 
 2. REWARDS: 
-   - Check if the category appears in any exclusions list (like 'categories' under spend_exclusion_policy)
+   - Check if the category appears in any exclusions list:
+     * For Axis cards: look in 'categories' under spend_exclusion_policy 
+     * For ICICI cards: look in accrual_exclusions array
    - If the category IS in exclusions: User can make the transaction but will NOT earn rewards/points
    - If the category is NOT in exclusions: User will earn the standard rewards/points
 
