@@ -393,6 +393,14 @@ CRITICAL RULES FOR REWARD RATES:
 4. Be specific about caps, limits, and conditions
 5. If there are multiple tiers or caps, explain them clearly
 
+CALCULATION RULES:
+6. When user provides a spend amount, ALWAYS calculate the rewards:
+   - Extract the rate (e.g., "5 EDGE Miles/₹100")
+   - Calculate: (Spend Amount ÷ Rate Denominator) × Points per Unit
+   - Example: ₹100,000 ÷ ₹100 × 5 = 1,000 × 5 = 5,000 EDGE Miles
+   - DOUBLE-CHECK your math before providing the final answer
+7. Show your calculation clearly for transparency
+
 EXAMPLE HIERARCHY:
 - If user asks about "hotel spends" and there's a "travel" section with "Direct Hotels" → use the travel rate
 - If user asks about "dining" and there's a "dining" section → use the dining rate  
