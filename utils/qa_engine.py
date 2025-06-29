@@ -347,24 +347,27 @@ IMPORTANT: Address BOTH fees AND rewards in your response:
 
 1. FEES/CHARGES: If there's surcharge_info in the data, mention any fees or charges for this category.
 
-2. REWARDS: 
-   - Check if the category appears in any exclusions list:
-     * For Axis cards: look in 'categories' under spend_exclusion_policy 
-     * For ICICI cards: look in accrual_exclusions array
-   - If the category IS in exclusions: User can make the transaction but will NOT earn rewards/points
-   - If the category is NOT in exclusions: 
-     * Use general_rate (e.g., "6 points per ₹200") if available
-     * Calculate total points based on spend amount
-     * ALWAYS check for category_cap and apply it as the maximum limit
-     * Mention value_per_point if available
+2. REWARDS ELIGIBILITY CHECK:
+   FIRST, determine if the category earns rewards:
+   - Look for the category name (e.g., "utilities", "rent", "fuel") in the exclusions list
+   - For ICICI: check accrual_exclusions array
+   - For Axis: check categories under spend_exclusion_policy
+   - If category IS FOUND in exclusions → NO REWARDS (stop here)
+   - If category is NOT FOUND in exclusions → PROCEED to calculate rewards
 
-3. CALCULATION LOGIC:
+3. REWARDS CALCULATION (only if category earns rewards):
+   - Use general_rate (e.g., "6 points per ₹200") 
+   - Calculate total points based on spend amount
+   - Check for category_cap and apply it as the maximum limit
+   - Mention value_per_point if available
+
+4. CALCULATION LOGIC (only if rewards are earned):
    - Step 1: Calculate theoretical points (spend ÷ rate × points)
    - Step 2: Check if category_cap exists for this spending category
    - Step 3: If cap exists, the FINAL answer is the LOWER of calculated points OR cap
    - Step 4: Clearly state both the calculated amount and the capped amount
 
-4. ALWAYS mention caps when they exist, even for small amounts that don't hit the cap.
+5. IMPORTANT: Be very clear about whether the category earns rewards or not. Don't contradict yourself.
 
 Be specific about amounts, thresholds, and conditions. Include earning rates, caps, and point values.
 Do not invent information. If the data is missing, say so.
