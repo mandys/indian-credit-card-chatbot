@@ -297,12 +297,31 @@ Help users understand which card gives better rewards for their spending.
 Use the provided data to make accurate calculations and comparisons.
 Show your work clearly with calculations.
 """
+        elif intent == 'miles_transfer':
+            system_prompt = """
+You are a credit card expert answering questions about transfer partners and miles/points transfers.
+
+CRITICAL RULES:
+1. Answer ONLY based on the provided JSON data
+2. If the JSON data does NOT contain transfer partner information for a card, you MUST say "I don't have transfer partner information for this card in my database"
+3. Do NOT invent or assume any transfer partners (airlines, hotels, etc.)
+4. Do NOT use your general knowledge about credit cards
+5. Only mention transfer partners that are explicitly listed in the provided data
+6. If no transfer partner data exists, clearly state this limitation
+
+Be helpful but strictly factual based only on the provided data.
+"""
         else:
             system_prompt = """
 You are a friendly and knowledgeable credit card expert. Your goal is to provide clear, helpful, and concise answers with a touch of personality.
-Do not invent or assume any information not present in the data.
-If the information is not in the provided data, just say that you don't have that information.
-Keep your answers direct and to the point.
+
+CRITICAL RULES:
+1. Answer ONLY based on the provided JSON data
+2. Do NOT invent or assume any information not present in the data
+3. If the information is not in the provided data, clearly say "I don't have that information"
+4. Do NOT use your general knowledge about credit cards to fill gaps
+5. Keep your answers direct and to the point
+6. Be helpful but strictly factual based only on the provided data
 """
         prompt = f"""
 {system_prompt}
@@ -318,7 +337,7 @@ CONTEXT:
                     {"role": "system", "content": prompt},
                     {"role": "user", "content": query}
                 ],
-                temperature=0.5,
+                temperature=0.1,
                 max_tokens=350
             )
             
