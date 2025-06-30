@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Credit Card Chatbot Test Cases</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; vertical-align: top; }
+        th { background-color: #f5f5f5; font-weight: bold; }
+        .query { width: 40%; }
+        .expected { width: 60%; }
+        .category { background-color: #e8f4f8; font-weight: bold; }
+        .status { width: 100px; text-align: center; }
+        .pass { background-color: #d4edda; color: #155724; }
+        .fail { background-color: #f8d7da; color: #721c24; }
+        .pending { background-color: #fff3cd; color: #856404; }
+        h1 { color: #333; }
+        h2 { color: #666; margin-top: 30px; }
+        .note { font-style: italic; color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Credit Card Chatbot Test Cases</h1>
+        <p class="note">This file tracks expected answers for various queries to prevent regression when making changes to the bot logic.</p>
+        
+        <h2>Category-Specific Spend Queries</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th class="query">User Query</th>
+                    <th class="expected">Expected Answer</th>
+                    <th class="status">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="category">
+                    <td colspan="3">Hotel & Travel Spending</td>
+                </tr>
+                <tr>
+                    <td>I have a 200,000 hotel spend coming up. Which card is better axis atlas or icici epm?</td>
+                    <td>
+                        <strong>For ₹2,00,000 hotel spend:</strong><br><br>
+                        <strong>Axis Atlas:</strong> 10,000 EDGE Miles<br>
+                        - Rate: 5 EDGE Miles per ₹100 (travel category includes hotels)<br>
+                        - Calculation: ₹2,00,000 ÷ 100 × 5 = 10,000 miles<br>
+                        - Monthly cap: ₹2L, so this spend hits the cap limit<br><br>
+                        <strong>ICICI Emeralde:</strong> 6,000 points<br>
+                        - Rate: 6 points per ₹200 (general rate, no special hotel rate)<br>
+                        - Calculation: ₹2,00,000 ÷ 200 × 6 = 6,000 points<br><br>
+                        <strong>Winner:</strong> Axis Atlas gives significantly more rewards (10,000 miles vs 6,000 points)
+                    </td>
+                    <td class="pass">PASSING</td>
+                </tr>
+                <tr>
+                    <td>Which card is better for direct airline bookings?</td>
+                    <td>Axis Atlas is better for direct airline bookings, offering 5 EDGE Miles per ₹100 spent (up to ₹2L monthly cap), compared to ICICI Emeralde's general rate of 6 points per ₹200.</td>
+                    <td class="pass">PASSING</td>
+                </tr>
+                <tr class="category">
+                    <td colspan="3">Utility Spending</td>
+                </tr>
+                <tr>
+                    <td>Can I pay utility bills with these cards?</td>
+                    <td>
+                        <strong>ICICI Emeralde:</strong> 1% fee on utility transactions exceeding ₹50,000. You can earn 6 points per ₹200, but capped at 1,000 points per statement cycle for utilities.<br><br>
+                        <strong>Axis Atlas:</strong> 1% fee beyond ₹25,000/month. Utility spends are excluded from earning EDGE Miles.
+                    </td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+                <tr>
+                    <td>What are the utility charges on ICICI EPM?</td>
+                    <td>ICICI Emeralde Private Metal has a 1% fee on utility payment transactions exceeding ₹50,000 (effective Nov 15, 2024).</td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+                <tr>
+                    <td>I have a utility spend of INR 10,000 which card is better atlas or icici epm</td>
+                    <td>
+                        <strong>For ₹10,000 utility spend:</strong><br><br>
+                        <strong>Axis Atlas:</strong> 0 miles<br>
+                        - Rate: No EDGE Miles earned (excluded category)<br>
+                        - Calculation: ₹10,000 - 0 miles (utilities excluded from rewards)<br><br>
+                        <strong>ICICI Emeralde:</strong> 300 points<br>
+                        - Rate: 6 points per ₹200 (general rate)<br>
+                        - Calculation: ₹10,000 ÷ 200 × 6 = 300 points<br><br>
+                        <strong>Winner:</strong> ICICI Emeralde gives you more rewards (300 points vs 0 miles)
+                    </td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+                <tr class="category">
+                    <td colspan="3">Reward Comparison Queries</td>
+                </tr>
+                <tr>
+                    <td>If I spend 100000 which card gives me more rewards?</td>
+                    <td>
+                        <strong>For ₹1,00,000 general spend:</strong><br><br>
+                        <strong>ICICI Bank Emeralde Private Metal Credit Card:</strong> 3,000 points<br>
+                        - Rate: 6 points per ₹200<br>
+                        - Calculation: ₹1,00,000 ÷ 200 × 6 = 3,000 points<br><br>
+                        <strong>Axis Bank Atlas Credit Card:</strong> 2,000 EDGE Miles<br>
+                        - Rate: 2 EDGE Miles per ₹100<br>
+                        - Calculation: ₹1,00,000 ÷ 100 × 2 = 2,000 miles<br><br>
+                        <strong>Winner:</strong> ICICI Emeralde gives you more rewards (3,000 points vs 2,000 miles)
+                    </td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Miles Transfer & Partner Queries</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th class="query">User Query</th>
+                    <th class="expected">Expected Answer</th>
+                    <th class="status">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Can I transfer ICICI points to airlines?</td>
+                    <td>
+                        <strong>ICICI Bank Emeralde Private Metal Credit Card:</strong><br><br>
+                        <strong>No direct airline transfer partnerships available.</strong><br><br>
+                        <strong>Alternative Redemption Options:</strong><br>
+                        - Flight Vouchers: ₹1 per Reward Point<br>
+                        - Hotel Vouchers: ₹1 per Reward Point<br>
+                        - Statement Credit: ₹0.4 per Reward Point (max 50,000 points per cycle)<br>
+                        - iShop Platform: Use points for flights (100% payment) and hotels (90% payment)<br>
+                        - Monthly capping: 18,000 points, Daily capping: 10,000 points
+                    </td>
+                    <td class="fail">FAILING</td>
+                </tr>
+                <tr>
+                    <td>What are Axis Atlas transfer partners?</td>
+                    <td>Axis Atlas EDGE Miles can be transferred to airline and hotel partners including: Air Canada, Ethiopian, Etihad, JAL, Qatar Airways, Singapore Airlines, Turkish Airlines, Thai Airways, United Airlines, Marriott Bonvoy, Accor, and others. You can transfer up to 1,50,000 EDGE Miles per year with a ₹199 transfer fee.</td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Fee & Charges Queries</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th class="query">User Query</th>
+                    <th class="expected">Expected Answer</th>
+                    <th class="status">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>What are the joining fees for both cards?</td>
+                    <td>
+                        <strong>Axis Atlas:</strong> ₹5,000 + GST joining fee<br>
+                        <strong>ICICI Emeralde Private Metal:</strong> ₹12,499 joining fee
+                    </td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+                <tr>
+                    <td>Annual fee waiver conditions?</td>
+                    <td>
+                        <strong>ICICI Bank Emeralde Private Metal Credit Card:</strong><br>
+                        - Annual fee: ₹12,499 from 2nd year onwards<br>
+                        - Waiver condition: Spend ₹10,00,000 in anniversary year<br>
+                        - Exclusions: EMI, rent, government, and education payments excluded from spends calculation<br><br>
+                        <strong>Axis Bank Atlas Credit Card:</strong><br>
+                        - No annual fee waiver information available in the provided data
+                    </td>
+                    <td class="pass">PASSING</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Milestone & Welcome Benefits</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th class="query">User Query</th>
+                    <th class="expected">Expected Answer</th>
+                    <th class="status">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>What welcome benefits do I get with Axis Atlas?</td>
+                    <td>Axis Atlas offers 2,500 EDGE Miles as welcome benefit upon completing 1 transaction within 37 days of card activation (post April 2024). Previously offered 5,000 miles with different conditions.</td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+                <tr>
+                    <td>What are the milestone benefits for spending 8 lakhs on ICICI EPM?</td>
+                    <td>For ₹8 lakh annual spend on ICICI Emeralde Private Metal, you get the second EaseMyTrip air travel voucher worth ₹3,000 (part of total ₹6,000 milestone benefit - first voucher at ₹4L, second at ₹8L).</td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Lounge Access</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th class="query">User Query</th>
+                    <th class="expected">Expected Answer</th>
+                    <th class="status">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>How many lounge visits do I get with Axis Atlas?</td>
+                    <td>Axis Atlas lounge access depends on your tier: Silver (8 domestic, 4 international), Gold (12 domestic, 6 international), Platinum (18 domestic, 12 international). Tier is based on annual spend thresholds.</td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+                <tr>
+                    <td>Do I get international lounge access with ICICI EPM?</td>
+                    <td>Yes, ICICI Emeralde Private Metal provides unlimited complimentary international lounge access through Priority Pass for both primary and add-on cardholders. Guest charges are USD 29 + GST per visit.</td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+                <tr>
+                    <td>for international lounge access for self and guest which card is better ? Atlas or epm ?</td>
+                    <td>
+                        <strong>ICICI Bank Emeralde Private Metal Credit Card is better for international lounge access with guests.</strong><br><br>
+                        <strong>ICICI EPM:</strong><br>
+                        - Unlimited complimentary international lounge access via Priority Pass<br>
+                        - Guest access: USD 29 + GST per guest per visit<br>
+                        - Clear pricing and unlimited access<br><br>
+                        <strong>Axis Atlas:</strong><br>
+                        - Tier-based limited international lounge visits (Silver: 4, Gold: 6, Platinum: 12)<br>
+                        - Guests count toward your quota (reduces your available visits)<br>
+                        - Limited access compared to ICICI's unlimited<br><br>
+                        <strong>Recommendation:</strong> ICICI EPM is superior for frequent travelers with guests due to unlimited access and predictable guest charges.
+                    </td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Portfolio & General Queries</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th class="query">User Query</th>
+                    <th class="expected">Expected Answer</th>
+                    <th class="status">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>What cards do you have?</td>
+                    <td>Here are the credit cards in our portfolio: Axis Bank Atlas Credit Card, ICICI Bank Emeralde Private Metal Credit Card. You can ask me about joining fees, annual fees, rewards, lounge access, etc.</td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+                <tr>
+                    <td>What are the joining fees?</td>
+                    <td>
+                        <strong>Axis Atlas:</strong> ₹5,000 + GST<br>
+                        <strong>ICICI Emeralde Private Metal:</strong> ₹12,499
+                    </td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+                <tr>
+                    <td>Annual fees for both cards?</td>
+                    <td>
+                        <strong>Axis Atlas:</strong> ₹5,000 + GST annual fee<br>
+                        <strong>ICICI Emeralde Private Metal:</strong> Nil for 1st year, ₹12,499 from 2nd year onwards
+                    </td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+                <tr>
+                    <td>Tell me about lounge access</td>
+                    <td>
+                        <strong>Axis Atlas:</strong> Tier-based access through Dreamfolks (Silver: 8 domestic/4 international, Gold: 12/6, Platinum: 18/12)<br>
+                        <strong>ICICI Emeralde:</strong> Unlimited domestic and international lounge access via Priority Pass
+                    </td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+                <tr>
+                    <td>What welcome benefits do you offer?</td>
+                    <td>
+                        <strong>Axis Atlas:</strong> 2,500 EDGE Miles welcome benefit (post April 2024)<br>
+                        <strong>ICICI Emeralde:</strong> 12,500 reward points, Taj Epicure membership, EazyDiner Prime membership
+                    </td>
+                    <td class="pending">PARTIAL</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>Notes</h2>
+        <ul>
+            <li><strong>Status Key:</strong> 
+                <span class="pass">PASSING</span> = Working correctly, 
+                <span class="fail">FAILING</span> = Not working as expected, 
+                <span class="pending">PENDING</span> = Needs to be tested
+            </li>
+            <li>This test file should be updated whenever new functionality is added or issues are discovered</li>
+            <li>Before making changes to the bot logic, run through these test cases to ensure no regression</li>
+            <li>Add new test cases whenever users report issues or new features are implemented</li>
+        </ul>
+    </div>
+<p class="note">Last updated: 2025-06-30 12:25:19</p>
+<p class="note">Last updated: 2025-06-30 12:30:44</p>
+<p class="note">Last updated: 2025-06-30 12:46:22</p>
+<p class="note">Last updated: 2025-06-30 13:15:06</p>
+<p class="note">Last updated: 2025-06-30 14:45:32</p>
+<p class="note">Last updated: 2025-06-30 14:53:09</p>
+  <p class="note">Last updated: 2025-06-30 14:59:25</p>
+  <p class="note">Last updated: 2025-06-30 15:00:40</p>
+  <p class="note">Last updated: 2025-06-30 15:06:35</p>
+    <p class="note">Last updated: 2025-06-30 15:15:23 - Added lounge access comparison test</p>
+<p class="note">Last updated: 2025-06-30 15:39:08</p>
+<p class="note">Last updated: 2025-06-30 15:48:59</p>
+<p class="note">Last updated: 2025-06-30 15:50:34 - Fixed utilities, miles transfer, fee waiver test cases</p>
+</body>
+</html> 
