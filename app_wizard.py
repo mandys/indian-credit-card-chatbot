@@ -19,72 +19,119 @@ st.markdown("""
     footer {visibility: hidden;}
     header {visibility: hidden;}
     
-    /* Custom button styling */
+    /* Clean, minimal button styling */
     .stButton > button {
-        background: linear-gradient(90deg, #1E88E5 0%, #42A5F5 100%);
-        color: white;
-        border: none;
-        border-radius: 8px;
-        padding: 0.5rem 1rem;
+        background: white;
+        color: #2c3e50;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 0.75rem 1.5rem;
         font-weight: 500;
-        transition: all 0.3s ease;
+        transition: all 0.2s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     }
     
     .stButton > button:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(30, 136, 229, 0.3);
-    }
-    
-    /* Card selection buttons */
-    .card-button {
-        background: white;
-        border: 2px solid #e0e0e0;
-        border-radius: 12px;
-        padding: 1rem;
-        margin: 0.5rem 0;
-        text-align: center;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .card-button:hover {
-        border-color: #1E88E5;
+        border-color: #3498db;
         background: #f8f9fa;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(52, 152, 219, 0.15);
     }
     
-    /* Info boxes */
+    /* Primary action buttons */
+    .primary-button button {
+        background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        color: white;
+        border: none;
+    }
+    
+    .primary-button button:hover {
+        background: linear-gradient(135deg, #2980b9 0%, #1f6ec7 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(52, 152, 219, 0.25);
+    }
+    
+    /* Card selection styling */
+    .card-selection {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin: 0.75rem 0;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+    
+    .card-selection:hover {
+        border-color: #3498db;
+        background: #f8f9fa;
+        box-shadow: 0 4px 12px rgba(52, 152, 219, 0.1);
+    }
+    
+    /* Category grid - cleaner spacing */
+    .category-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 1rem;
+        margin: 1rem 0;
+    }
+    
+    /* Info boxes - softer styling */
     .info-box {
-        background: linear-gradient(135deg, #E3F2FD 0%, #F3E5F5 100%);
-        border-left: 4px solid #1E88E5;
-        padding: 1rem;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border-left: 4px solid #3498db;
+        padding: 1rem 1.5rem;
         border-radius: 8px;
         margin: 1rem 0;
+        color: #2c3e50;
     }
     
-    /* Chat interface styling */
-    .chat-container {
-        background: white;
-        border-radius: 12px;
-        padding: 1rem;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-        margin: 1rem 0;
-    }
-    
-    /* Progress indicator */
+    /* Progress indicator - minimal */
     .progress-step {
         display: inline-block;
-        padding: 0.25rem 0.75rem;
+        padding: 0.5rem 1rem;
         margin: 0.25rem;
-        border-radius: 20px;
-        background: #E3F2FD;
-        color: #1976D2;
+        border-radius: 25px;
+        background: #f8f9fa;
+        color: #6c757d;
         font-size: 0.9rem;
-        font-weight: 500;
+        border: 1px solid #e9ecef;
     }
     
     .progress-step.active {
-        background: #1976D2;
+        background: #3498db;
         color: white;
+        border-color: #3498db;
+    }
+    
+    /* Reduce visual noise */
+    .stSelectbox > div > div {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+    }
+    
+    .stTextArea > div > div > textarea {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        background: white;
+    }
+    
+    /* Clean subcategory buttons */
+    .subcategory-button {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin: 0.5rem 0;
+        color: #495057;
+        transition: all 0.2s ease;
+    }
+    
+    .subcategory-button:hover {
+        border-color: #3498db;
+        background: #f8f9fa;
+        color: #2c3e50;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -139,26 +186,26 @@ def render_chat_interface():
     """Render the traditional chat interface"""
     st.markdown("### 💬 Chat with your Credit Card Assistant")
     
-    # Quick action buttons
+    # Quick action buttons - reduced to most essential
     st.markdown("**Quick Questions:**")
     col1, col2, col3 = st.columns(3)
     
     with col1:
-        if st.button("Check returns on my cards", key="quick_returns"):
+        if st.button("💰 Compare Rewards", key="quick_rewards", help="Compare reward rates"):
             query = "If I spend 100000 which card gives me more rewards?"
             answer = st.session_state.chat_engine.get_answer(query)
             st.markdown("**Answer:**")
             st.markdown(answer)
     
     with col2:
-        if st.button("Airport Benefits", key="quick_airport"):
+        if st.button("✈️ Airport Benefits", key="quick_airport", help="Lounge access and travel benefits"):
             query = "What are the airport lounge access benefits?"
             answer = st.session_state.chat_engine.get_answer(query)
             st.markdown("**Answer:**")
             st.markdown(answer)
     
     with col3:
-        if st.button("Annual Fee Waiver", key="quick_waiver"):
+        if st.button("💳 Annual Fees", key="quick_fees", help="Fee structure and waivers"):
             query = "What are the annual fee waiver conditions?"
             answer = st.session_state.chat_engine.get_answer(query)
             st.markdown("**Answer:**")
@@ -170,57 +217,40 @@ def render_chat_interface():
     user_query = st.text_area(
         "Ask any question about credit cards:",
         placeholder="e.g., If I spend ₹2 lakhs on hotels, which card gives better rewards?",
-        height=100,
+        height=120,
         key="chat_input"
     )
     
+    # Single centered submit button
     col1, col2, col3 = st.columns([2, 1, 2])
-    
     with col2:
-        if st.button("Get Answer", key="chat_submit", disabled=not user_query.strip()):
+        if st.button("Get Answer", key="chat_submit", disabled=not user_query.strip(), use_container_width=True):
             if user_query.strip():
                 with st.spinner("Thinking..."):
                     answer = st.session_state.chat_engine.get_answer(user_query)
                 st.markdown("### 🤖 Answer:")
                 st.markdown(answer)
     
-    # Show conversation starters if no input
+    # Show helpful examples only if no input
     if not user_query.strip():
-        st.markdown("**Popular Questions:**")
+        st.markdown("---")
+        st.markdown("**💡 Example Questions:**")
         
-        categories = [
-            ("🏨 Hotels", "Rent", "⚡ Utilities", "⛽ Fuel"),
-            ("🎓 Education", "🏛️ Government", "💍 Gold/Jewellery", "🛡️ Insurance"),
-            ("✈️ Travel", "🎮 Gaming", "📱 Online", "🛍️ Shopping")
+        examples = [
+            "If I spend ₹2 lakhs on hotels, which card gives better rewards?",
+            "What are the utility payment charges?", 
+            "Can I transfer ICICI points to airlines?",
+            "Which card has better lounge access for international travel?",
+            "What insurance benefits do these cards provide?"
         ]
         
-        for category_row in categories:
-            cols = st.columns(len(category_row))
-            for col, category in zip(cols, category_row):
-                with col:
-                    if st.button(category, key=f"category_{category}", use_container_width=True):
-                        # Generate a sample query for the category
-                        category_queries = {
-                            "🏨 Hotels": "What are the rewards for hotel bookings?",
-                            "Rent": "What are the charges for rent payments?", 
-                            "⚡ Utilities": "What are the rewards and fees for utility payments?",
-                            "⛽ Fuel": "What are the charges for fuel purchases?",
-                            "🎓 Education": "What are the fees for education payments?",
-                            "🏛️ Government": "What are the charges for government payments?",
-                            "💍 Gold/Jewellery": "Are gold purchases excluded from rewards?",
-                            "🛡️ Insurance": "What are the fees for insurance payments?",
-                            "✈️ Travel": "What are the travel benefits?",
-                            "🎮 Gaming": "Are gaming transactions excluded from rewards?",
-                            "📱 Online": "What are the rewards for online shopping?",
-                            "🛍️ Shopping": "What are the general shopping rewards?"
-                        }
-                        
-                        if category in category_queries:
-                            query = category_queries[category]
-                            answer = st.session_state.chat_engine.get_answer(query)
-                            st.markdown(f"**Question:** {query}")
-                            st.markdown("**Answer:**")
-                            st.markdown(answer)
+        for i, example in enumerate(examples):
+            if st.button(f"💭 {example}", key=f"example_{i}", help="Click to use this example"):
+                # Set the example as the query and get answer
+                answer = st.session_state.chat_engine.get_answer(example)
+                st.markdown(f"**Question:** {example}")
+                st.markdown("**Answer:**")
+                st.markdown(answer)
 
 def main():
     """Main application function"""

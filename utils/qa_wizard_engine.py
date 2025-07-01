@@ -297,7 +297,7 @@ class CreditCardWizard:
         subcategory = st.session_state.selected_subcategory
         selected_cards = st.session_state.selected_cards
         
-        # Map wizard selections to QA engine queries
+        # Enhanced query mapping with better hotel/travel handling
         query_map = {
             'rewards': {
                 'general_rates': "What are the general reward rates?",
@@ -318,7 +318,7 @@ class CreditCardWizard:
                 'other_fees': "What other fees are charged?"
             },
             'spending': {
-                'hotels_travel': "What are the rewards and fees for hotel and travel spending?",
+                'hotels_travel': "Compare rewards for hotel and travel spending between cards",
                 'utilities': "What are the rewards and fees for utility payments?",
                 'rent': "What are the rewards and fees for rent payments?",
                 'fuel': "What are the rewards and fees for fuel purchases?",
@@ -341,8 +341,18 @@ class CreditCardWizard:
         if category in query_map and subcategory in query_map[category]:
             base_query = query_map[category][subcategory]
             
-            # Add card-specific context if only one card selected
-            if len(selected_cards) == 1:
+            # Special handling for hotel/travel spending comparisons
+            if subcategory == 'hotels_travel' and len(selected_cards) > 1:
+                # Force a reward comparison query that will trigger proper calculation
+                query = "Which card gives better rewards for hotel spending? Compare Axis Atlas vs ICICI Emeralde for travel"
+            elif subcategory == 'hotels_travel' and len(selected_cards) == 1:
+                card_name = self.cards[selected_cards[0]]['name']
+                if 'Atlas' in card_name:
+                    query = f"What are the hotel and travel rewards for {card_name}? How many EDGE Miles per rupee for travel category?"
+                else:
+                    query = f"What are the hotel and travel rewards for {card_name}?"
+            # Add card-specific context for other queries
+            elif len(selected_cards) == 1:
                 card_name = self.cards[selected_cards[0]]['name']
                 query = f"{base_query} for {card_name}"
             else:
