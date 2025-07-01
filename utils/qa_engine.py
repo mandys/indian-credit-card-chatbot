@@ -82,7 +82,9 @@ class RichDataCreditCardBot:
         for bank_terms in self.bank_common_terms.values():
             all_keys.update(bank_terms.keys())
         for card in self.cards_data.values():
-            all_keys.update(card.keys())
+            # Filter out internal metadata keys that start with _
+            valid_keys = {key for key in card.keys() if not key.startswith('_')}
+            all_keys.update(valid_keys)
 
         patterns = {key.replace('_', ' '): [key.replace('_', ' ')] for key in all_keys}
         
@@ -255,7 +257,86 @@ class RichDataCreditCardBot:
         
         # Handle ICICI Emeralde Private Metal
         if "ICICI" in card_name and "Emeralde" in card_name:
-            # ICICI: 6 points per ₹200 spent (general rate, no category-specific rates)
+            # Check if the spending category is excluded from earning rewards
+            rewards_info = card_info.get('rewards', {})
+            excluded_categories = rewards_info.get('accrual_exclusions', [])
+            
+            # Create a mapping for categories to check against exclusions
+            category_exclusion_map = {
+                'government': ['government services', 'tax'],
+                'tax': ['government services', 'tax'],
+                'rent': ['rent'],
+                'fuel': ['fuel payments'],
+                'emi': ['EMI conversions']
+                # Note: utilities are NOT excluded - they have capping instead
+            }
+            
+            # Check if this category is excluded
+            if category and category.lower() in category_exclusion_map:
+                exclusion_keywords = category_exclusion_map[category.lower()]
+                for exclusion in excluded_categories:
+                    for keyword in exclusion_keywords:
+                        if keyword.lower() in exclusion.lower():
+                            return {
+                                "card": card_name,
+                                "spend_amount": spend_amount,
+                                "points_earned": 0,
+                                "rate": "No reward points earned (excluded category)",
+                                "calculation": f"₹{spend_amount:,} - 0 points ({category} excluded from rewards)",
+                                "category": category,
+                                "excluded": True,
+                                "exclusion_reason": exclusion
+                            }
+            
+            # Check for capped categories (utility, grocery, education, insurance)
+            capping_info = rewards_info.get('capping_per_statement_cycle', {})
+            if category and category.lower() in ['utility', 'utilities', 'grocery', 'education', 'insurance']:
+                # Map category names to capping keys
+                cap_key_map = {
+                    'utility': 'utility',
+                    'utilities': 'utility',
+                    'grocery': 'grocery', 
+                    'education': 'education',
+                    'insurance': 'insurance'
+                }
+                cap_key = cap_key_map.get(category.lower())
+                
+                if cap_key and cap_key in capping_info:
+                    # Extract cap amount (e.g., "1,000 Reward Points" -> 1000)
+                    cap_text = capping_info[cap_key]
+                    import re
+                    cap_match = re.search(r'(\d{1,3}(?:,\d{3})*)', cap_text)
+                    if cap_match:
+                        cap_points = int(cap_match.group(1).replace(',', ''))
+                        
+                        # Calculate points: 6 points per ₹200 spent
+                        uncapped_points = (spend_amount // 200) * 6
+                        capped_points = min(uncapped_points, cap_points)
+                        
+                        if uncapped_points > cap_points:
+                            return {
+                                "card": card_name,
+                                "spend_amount": spend_amount,
+                                "points_earned": capped_points,
+                                "rate": f"6 points per ₹200 (capped at {cap_points:,} points per cycle)",
+                                "calculation": f"₹{spend_amount:,} ÷ 200 × 6 = {uncapped_points} points, capped at {cap_points:,} points",
+                                "category": category,
+                                "cap_applied": True,
+                                "cap_amount": cap_points
+                            }
+                        else:
+                            return {
+                                "card": card_name,
+                                "spend_amount": spend_amount,
+                                "points_earned": capped_points,
+                                "rate": f"6 points per ₹200 (up to {cap_points:,} points per cycle)",
+                                "calculation": f"₹{spend_amount:,} ÷ 200 × 6 = {capped_points} points",
+                                "category": category,
+                                "cap_applied": False,
+                                "cap_amount": cap_points
+                            }
+            
+            # If not excluded and not a capped category, calculate normal points: 6 points per ₹200 spent
             points = (spend_amount // 200) * 6
             return {
                 "card": card_name,
@@ -285,6 +366,7 @@ class RichDataCreditCardBot:
                 'wallet': 'wallet',
                 'insurance': 'insurance',
                 'government': 'government institution',
+                'tax': 'government institution',  # Tax falls under government
                 'telecom': 'telecom',
                 'gold': 'gold/ jewellery',
                 'jewellery': 'gold/ jewellery'
@@ -299,7 +381,7 @@ class RichDataCreditCardBot:
                         "spend_amount": spend_amount,
                         "miles_earned": 0,
                         "rate": "No EDGE Miles earned (excluded category)",
-                        "calculation": f"₹{spend_amount:,} - 0 miles (utilities excluded from rewards)",
+                        "calculation": f"₹{spend_amount:,} - 0 miles ({category} excluded from rewards)",
                         "category": category,
                         "excluded": True
                     }
@@ -656,11 +738,12 @@ IMPORTANT: Address BOTH fees AND rewards in your response:
 
 2. REWARDS ELIGIBILITY CHECK:
    FIRST, determine if the category earns rewards:
-   - Look for the category name (e.g., "utilities", "rent", "fuel") in the exclusions list
-   - For ICICI: check accrual_exclusions array
-   - For Axis: check categories under spend_exclusion_policy
+   - Look for the category name (e.g., "rent", "fuel", "government") in the exclusions list
+   - For ICICI: check accrual_exclusions array (utilities are NOT excluded but have caps)
+   - For Axis: check categories under spend_exclusion_policy (utilities ARE excluded)
    - If category IS FOUND in exclusions → NO REWARDS (stop here)
    - If category is NOT FOUND in exclusions → PROCEED to calculate rewards
+   - For ICICI: utilities/grocery/education/insurance have capping_per_statement_cycle limits
 
 3. REWARDS CALCULATION (only if category earns rewards):
    - Use general_rate (e.g., "6 points per ₹200") 
@@ -732,8 +815,10 @@ RESPONSE FORMAT:
 
 EXCLUSION HANDLING:
 11. Check accrual_exclusions list for the spending category
-12. Common exclusions include: utilities, rent, fuel, government, insurance, etc.
-13. If excluded from rewards, clearly state this fact
+12. For ICICI: Common exclusions include rent, fuel, government, tax, EMI (utilities are NOT excluded but have caps)
+13. For Axis: Common exclusions include utilities, rent, fuel, government, insurance, etc.
+14. If excluded from rewards, clearly state this fact
+15. For ICICI: If utilities/grocery/education/insurance, check capping_per_statement_cycle for caps
 
 Be precise, clear, and helpful based only on the provided data.
 """
