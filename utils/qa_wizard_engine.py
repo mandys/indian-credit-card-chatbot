@@ -208,6 +208,29 @@ class CreditCardWizard:
                         st.session_state.wizard_step = 'subcategory_selection'
                     st.rerun()
         
+        # Add "Ask Custom Question" escape hatch
+        st.markdown("---")
+        st.markdown("**💬 Or ask a custom question about your selected cards:**")
+        
+        custom_query = st.text_input(
+            "Your question:",
+            placeholder="e.g., What's the best strategy for maximizing rewards on ₹50k monthly spend?",
+            key="custom_query_cat"
+        )
+        
+        if st.button("Get Answer", key="custom_submit_cat", disabled=not custom_query.strip()):
+            if custom_query.strip():
+                # Add card context to the query
+                if len(st.session_state.selected_cards) == 1:
+                    card_name = self.cards[st.session_state.selected_cards[0]]['name']
+                    contextual_query = f"{custom_query} for {card_name}"
+                else:
+                    contextual_query = custom_query
+                
+                answer = self.qa_engine.get_answer(contextual_query)
+                st.markdown("### 🤖 Answer:")
+                st.markdown(answer)
+        
         # Back button
         if st.button("← Back to Card Selection", key="back_to_cards"):
             st.session_state.wizard_step = 'card_selection'
@@ -229,22 +252,52 @@ class CreditCardWizard:
         else:
             st.info(f"Comparing: **{' vs '.join(card_names)}**")
         
-        # Render subcategory options
+        # Render subcategory options in a 3-column grid
         if cat_info['subcategories']:
             st.markdown("**Select specific topic:**")
             
-            for subcat_id, subcat_name in cat_info['subcategories'].items():
-                if st.button(
-                    subcat_name,
-                    key=f"subcat_{subcat_id}",
-                    use_container_width=True
-                ):
-                    st.session_state.selected_subcategory = subcat_id
-                    st.session_state.wizard_complete = True
-                    st.rerun()
+            # Convert subcategories to list for easier handling
+            subcategories = list(cat_info['subcategories'].items())
+            
+            # Create 3-column grid layout
+            cols = st.columns(3)
+            for i, (subcat_id, subcat_name) in enumerate(subcategories):
+                col_idx = i % 3
+                with cols[col_idx]:
+                    if st.button(
+                        subcat_name,
+                        key=f"subcat_{subcat_id}",
+                        use_container_width=True
+                    ):
+                        st.session_state.selected_subcategory = subcat_id
+                        st.session_state.wizard_complete = True
+                        st.rerun()
         else:
             # No subcategories, mark as complete
             st.session_state.wizard_complete = True
+        
+        # Add custom question escape hatch
+        st.markdown("---")
+        st.markdown(f"**💬 Or ask a custom question about {cat_info['name'].lower()}:**")
+        
+        custom_query = st.text_input(
+            "Your question:",
+            placeholder=f"e.g., Specific question about {cat_info['name'].lower()} for your selected cards",
+            key="custom_query_subcat"
+        )
+        
+        if st.button("Get Answer", key="custom_submit_subcat", disabled=not custom_query.strip()):
+            if custom_query.strip():
+                # Add card context to the query
+                if len(st.session_state.selected_cards) == 1:
+                    card_name = self.cards[st.session_state.selected_cards[0]]['name']
+                    contextual_query = f"{custom_query} for {card_name}"
+                else:
+                    contextual_query = custom_query
+                
+                answer = self.qa_engine.get_answer(contextual_query)
+                st.markdown("### 🤖 Answer:")
+                st.markdown(answer)
         
         # Back button
         col1, col2 = st.columns([1, 1])
