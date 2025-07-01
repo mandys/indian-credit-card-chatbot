@@ -20,9 +20,8 @@ class RichDataCreditCardBot:
     def __init__(self, data_files: list[str]):
         load_dotenv()
         
-        # Check for API keys in order of preference: Gemini -> DeepSeek -> OpenAI
+        # Check for API keys in order of preference: Gemini -> OpenAI
         gemini_key = os.getenv("GOOGLE_API_KEY")
-        deepseek_key = os.getenv("DEEPSEEK_API_KEY")
         openai_key = os.getenv("OPENAI_API_KEY")
         
         if gemini_key and GEMINI_AVAILABLE:
@@ -31,21 +30,13 @@ class RichDataCreditCardBot:
             self.gemini_model = genai.GenerativeModel('gemini-1.5-flash')
             self.api_type = "gemini"
             self.model = "gemini-1.5-flash"
-        elif deepseek_key:
-            print("🔥 Using DeepSeek API (95% cheaper than OpenAI!)")
-            self.client = openai.OpenAI(
-                api_key=deepseek_key,
-                base_url="https://api.deepseek.com"
-            )
-            self.api_type = "deepseek"
-            self.model = "deepseek-chat"
         elif openai_key:
             print("🤖 Using OpenAI API")
             self.client = openai.OpenAI(api_key=openai_key)
             self.api_type = "openai"
             self.model = "gpt-3.5-turbo"
         else:
-            raise ValueError("No API key found! Please set GOOGLE_API_KEY, DEEPSEEK_API_KEY, or OPENAI_API_KEY in .env file")
+            raise ValueError("No API key found! Please set GOOGLE_API_KEY or OPENAI_API_KEY in .env file")
         
         self._load_credit_card_data(data_files)
         self._setup_intent_patterns()
@@ -566,7 +557,7 @@ class RichDataCreditCardBot:
 
     def generate_answer(self, query: str, relevant_data: dict, intent: Optional[str]) -> str:
         """
-        Generates an answer using the configured API (Gemini, DeepSeek, or OpenAI) based on the relevant data.
+        Generates an answer using the configured API (Gemini or OpenAI) based on the relevant data.
         """
         # Handle reward comparison queries with calculations
         if intent == 'reward_comparison':
@@ -853,7 +844,7 @@ CONTEXT:
                 response = self.gemini_model.generate_content(f"{prompt}\n\nUser Query: {query}")
                 return response.text
             else:
-                # DeepSeek or OpenAI
+                # OpenAI
                 response = self.client.chat.completions.create(
                     model=self.model,
                     messages=[
@@ -883,22 +874,7 @@ CONTEXT:
                     return response.choices[0].message.content
                 except Exception as fallback_error:
                     return f"I'm sorry, both Gemini and OpenAI encountered errors: {e} | {fallback_error}"
-            elif self.api_type == "deepseek" and os.getenv("OPENAI_API_KEY"):
-                print(f"⚠️ DeepSeek failed ({e}), falling back to OpenAI...")
-                try:
-                    fallback_client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-                    response = fallback_client.chat.completions.create(
-                        model="gpt-3.5-turbo",
-                        messages=[
-                            {"role": "system", "content": prompt},
-                            {"role": "user", "content": query}
-                        ],
-                        temperature=0.1,
-                        max_tokens=350
-                    )
-                    return response.choices[0].message.content
-                except Exception as fallback_error:
-                    return f"I'm sorry, both DeepSeek and OpenAI encountered errors: {e} | {fallback_error}"
+
             else:
                 return f"I'm sorry, I encountered an error: {e}"
 
