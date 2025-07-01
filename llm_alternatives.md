@@ -1,9 +1,11 @@
 # LLM Alternatives for Credit Card Chatbot
 
+> **UPDATE**: DeepSeek integration has been removed due to payment issues for Indian users. Current active providers: Google Gemini (primary) and OpenAI (fallback).
+
 ## Current Setup: Multi-Provider with Smart Fallback
 ✅ **Google Gemini** - Primary (India-friendly, fast, cheap)  
-✅ **DeepSeek** - Secondary (cheapest, but payment issues in India)  
-✅ **OpenAI GPT-3.5-turbo** - Fallback (reliable, expensive)
+✅ **OpenAI GPT-3.5-turbo** - Fallback (reliable, expensive)  
+❌ **DeepSeek** - Removed (payment issues + insufficient balance)
 
 ## 1. 🌟 **Google Gemini (Now Primary!)**
 - **Model**: gemini-1.5-flash 

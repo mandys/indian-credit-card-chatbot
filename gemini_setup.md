@@ -1,6 +1,6 @@
 # Google Gemini API Setup Guide
 
-Google Gemini is an excellent alternative to OpenAI and DeepSeek for our credit card chatbot. It's fast, cost-effective, and **works great in India** with easy payment options.
+Google Gemini is an excellent alternative to OpenAI for our credit card chatbot. It's fast, cost-effective, and **works great in India** with easy payment options.
 
 ## Why Google Gemini?
 
@@ -86,15 +86,13 @@ python test_gemini.py
 
 The chatbot automatically detects available API keys in this priority order:
 1. **Google Gemini** (if `GOOGLE_API_KEY` is set)
-2. DeepSeek (if `DEEPSEEK_API_KEY` is set)  
-3. OpenAI (if `OPENAI_API_KEY` is set)
+2. OpenAI (if `OPENAI_API_KEY` is set)
 
 ### API Key Priority
 ```bash
 # .env file example - Gemini will be used first
 GOOGLE_API_KEY=AIza_your_gemini_key
-DEEPSEEK_API_KEY=sk-your_deepseek_key  # Fallback
-OPENAI_API_KEY=sk-your_openai_key      # Final fallback
+OPENAI_API_KEY=sk-your_openai_key      # Fallback
 ```
 
 ## Free Tier Limits
@@ -144,21 +142,20 @@ This is perfect for development and testing!
 
 ## Comparison with Other Providers
 
-| Feature | Google Gemini | DeepSeek | OpenAI |
-|---------|---------------|----------|---------|
-| **India Support** | ✅ Excellent | ❌ Limited payment | ✅ Good |
-| **Cost** | ✅ Very cheap | ✅ Cheapest | ❌ Expensive |
-| **Quality** | ✅ High | ✅ Good | ✅ High |
-| **Speed** | ✅ Fast | ✅ Fast | ⚠️ Moderate |
-| **Free Tier** | ✅ Generous | ⚠️ Limited | ⚠️ Small |
-| **Setup Ease** | ✅ Simple | ⚠️ Moderate | ✅ Simple |
+| Feature | Google Gemini | OpenAI |
+|---------|---------------|---------|
+| **India Support** | ✅ Excellent | ✅ Good |
+| **Cost** | ✅ Very cheap | ❌ Expensive |
+| **Quality** | ✅ High | ✅ High |
+| **Speed** | ✅ Fast | ⚠️ Moderate |
+| **Free Tier** | ✅ Generous | ⚠️ Small |
+| **Setup Ease** | ✅ Simple | ✅ Simple |
 
 ## Recommendations
 
 ### For Indian Users:
 1. **Primary**: Google Gemini (best overall for India)
 2. **Fallback**: OpenAI (if Gemini fails)
-3. **Skip**: DeepSeek (payment issues in India)
 
 ### For Development:
 - Start with Gemini free tier

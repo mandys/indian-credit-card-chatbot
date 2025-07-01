@@ -1,4 +1,10 @@
-# 🔥 DeepSeek API Setup Guide
+# ⚠️ DEPRECATED: DeepSeek API Setup Guide
+
+> **NOTICE**: DeepSeek integration has been removed from this project due to payment issues for Indian users and insufficient balance problems. Please use [Google Gemini](./gemini_setup.md) (recommended) or OpenAI instead.
+
+---
+
+## Historical Documentation (For Reference Only)
 
 ## Why DeepSeek?
 - **95% cheaper** than OpenAI (₹0.14 vs ₹2.00 per 1M tokens)
