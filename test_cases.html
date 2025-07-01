@@ -126,19 +126,19 @@
         <div class="row">
             <div class="col-md-3 col-6">
                 <div class="stats-card">
-                    <h3 class="display-4 text-primary">11</h3>
+                    <h3 class="display-4 text-primary">14</h3>
                     <p class="text-muted mb-0"><i class="fas fa-vial me-1"></i>Total Tests</p>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="stats-card">
-                    <h3 class="display-4 text-success">9</h3>
+                    <h3 class="display-4 text-success">11</h3>
                     <p class="text-muted mb-0"><i class="fas fa-check-circle me-1"></i>Passing</p>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="stats-card">
-                    <h3 class="display-4 text-warning">1</h3>
+                    <h3 class="display-4 text-warning">2</h3>
                     <p class="text-muted mb-0"><i class="fas fa-exclamation-circle me-1"></i>Partial</p>
                 </div>
             </div>
@@ -153,7 +153,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="stats-card">
-                    <h3 class="display-4 text-success">82%</h3>
+                    <h3 class="display-4 text-success">79%</h3>
                     <p class="text-muted mb-0"><i class="fas fa-percentage me-1"></i>Overall Success Rate</p>
                 </div>
             </div>
@@ -381,6 +381,69 @@
             </div>
         </div>
 
+        <!-- Category: Government Spending -->
+        <div class="category-header">
+            <i class="fas fa-university me-2"></i>
+            <h3 class="mb-0">Government Spending</h3>
+        </div>
+
+        <div class="test-case">
+            <div class="test-case-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">ICICI EPM Tax Payments</h5>
+                <span class="badge badge-pass">PASSING</span>
+            </div>
+            <div class="card-body">
+                <div class="query-text">
+                    <strong>Query:</strong> can we make tax payments using icici epm
+                </div>
+                <div class="expected-response">
+                    <strong>Expected Response:</strong><br>
+                    <strong>ICICI Bank Emeralde Private Metal Credit Card:</strong><br>
+                    ❌ NO, you don't get points on tax payments<br><br>
+                    <strong>Exclusions:</strong> Government services (MCC 9405, 9222, 9399, 9402, 9211, 9313, 9311) and tax payments (MCC 7276, 9311) are explicitly excluded from earning reward points.<br><br>
+                    <strong>Result:</strong> Tax payments will not earn any reward points on this card.
+                </div>
+            </div>
+        </div>
+
+        <div class="test-case">
+            <div class="test-case-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Axis Atlas Tax Payments</h5>
+                <span class="badge badge-pending">PARTIAL</span>
+            </div>
+            <div class="card-body">
+                <div class="query-text">
+                    <strong>Query:</strong> can we make tax payments using axis atlas
+                </div>
+                <div class="expected-response">
+                    <strong>Expected Response:</strong><br>
+                    <strong>Axis Bank Atlas Credit Card:</strong><br>
+                    ❌ NO, you don't get miles on tax payments<br><br>
+                    <strong>Exclusions:</strong> "Government Institution" is explicitly excluded from earning EDGE Miles. Tax payments fall under this category.<br><br>
+                    <strong>Result:</strong> Tax payments will not earn any EDGE Miles on this card.
+                </div>
+            </div>
+        </div>
+
+        <div class="test-case">
+            <div class="test-case-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Government Spending Comparison</h5>
+                <span class="badge badge-pass">PASSING</span>
+            </div>
+            <div class="card-body">
+                <div class="query-text">
+                    <strong>Query:</strong> do we get points on government payments using icici epm and axis atlas
+                </div>
+                <div class="expected-response">
+                    <strong>Expected Response:</strong><br>
+                    <strong>Clear comparison showing:</strong><br><br>
+                    <strong>ICICI EPM:</strong> ❌ Government services excluded (specific MCC codes listed)<br>
+                    <strong>Axis Atlas:</strong> ❌ Government Institution excluded from EDGE Miles<br><br>
+                    <strong>Conclusion:</strong> Both cards exclude government payments from earning any rewards.
+                </div>
+            </div>
+        </div>
+
         <!-- Footer Notes -->
         <div class="footer-note">
             <h5><i class="fas fa-info-circle me-2"></i>Notes</h5>
@@ -402,5 +465,6 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <p class="note">Last updated: 2025-07-01 13:06:15</p>
+<p class="note">Last updated: 2025-07-01 14:06:17</p>
 </body>
 </html> 

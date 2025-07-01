@@ -426,7 +426,7 @@ class RichDataCreditCardBot:
             return context
             
         # If the intent is a surcharge fee category, gather comprehensive context including common terms
-        if intent in ['utilities', 'rent', 'fuel', 'education', 'gaming', 'wallet', 'insurance_spending']:
+        if intent in ['utilities', 'rent', 'fuel', 'education', 'gaming', 'wallet', 'insurance_spending', 'government']:
             context = {}
             
             # If no specific cards mentioned, get all cards

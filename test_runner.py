@@ -84,6 +84,24 @@ class TestRunner:
                 "query": "do we get points on insurance payments done by axis atlas or icici epm",
                 "expected_keywords": ["ICICI", "5,000", "cap", "axis", "not", "excluded"],
                 "expected_content": "comparison showing ICICI yes, Axis no"
+            },
+            {
+                "category": "Government Spending",
+                "query": "can we make tax payments using icici epm",
+                "expected_keywords": ["excluded", "government", "no reward", "MCC"],
+                "expected_content": "excluded from rewards"
+            },
+            {
+                "category": "Government Spending", 
+                "query": "can we make tax payments using axis atlas",
+                "expected_keywords": ["excluded", "Government Institution", "no EDGE Miles"],
+                "expected_content": "excluded from rewards"
+            },
+            {
+                "category": "Government Spending",
+                "query": "do we get points on government payments using icici epm and axis atlas",
+                "expected_keywords": ["excluded", "no rewards", "Government Institution", "government services"],
+                "expected_content": "both cards exclude government payments"
             }
         ]
     
