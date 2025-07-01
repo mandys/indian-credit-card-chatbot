@@ -66,6 +66,24 @@ class TestRunner:
                 "query": "How many lounge visits do I get with Axis Atlas?",
                 "expected_keywords": ["tier", "Silver", "Gold", "Platinum", "domestic", "international"],
                 "expected_content": "tier-based lounge access"
+            },
+            {
+                "category": "Insurance Spending",
+                "query": "do we get points on insurance payments done using icici epm",
+                "expected_keywords": ["6 ICICI Bank Reward Points", "₹200", "5,000", "cap", "insurance"],
+                "expected_content": "rewards with cap"
+            },
+            {
+                "category": "Insurance Spending",
+                "query": "do we get points on insurance payments done using axis atlas",
+                "expected_keywords": ["not", "excluded", "insurance", "no rewards"],
+                "expected_content": "excluded from rewards"
+            },
+            {
+                "category": "Insurance Spending",
+                "query": "do we get points on insurance payments done by axis atlas or icici epm",
+                "expected_keywords": ["ICICI", "5,000", "cap", "axis", "not", "excluded"],
+                "expected_content": "comparison showing ICICI yes, Axis no"
             }
         ]
     

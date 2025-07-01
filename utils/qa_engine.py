@@ -106,7 +106,8 @@ class RichDataCreditCardBot:
             'tier_structure': [r'tier', r'status', 'level'],
             'lounge_access': [r'lounge', r'airport'],
             'miles_transfer': [r'miles transfer', r'partner', r'conversion'],
-            'insurance': [r'insurance'],
+            'insurance_spending': [r'insurance.*payment', r'insurance.*spend', r'pay.*insurance', r'points.*insurance.*payment', r'points.*insurance.*spend', r'reward.*insurance.*payment', r'reward.*insurance.*spend'],
+            'insurance': [r'insurance.*benefit', r'insurance.*cover', r'insurance.*claim', r'travel.*insurance', r'accident.*insurance'],
             'eligibility': [r'eligibility', r'eligible', r'apply'],
             'finance_charges': [r'finance charge', r'interest rate'],
             'education': [r'education'],
@@ -117,7 +118,6 @@ class RichDataCreditCardBot:
             'gaming': [r'gaming'],
             'government': [r'government', r'govt', r'tax'],
             'telecom': [r'telecom'],
-            'insurance': [r'insurance'],
             'gold': [r'gold', r'jewellery']
         }
         
@@ -128,7 +128,7 @@ class RichDataCreditCardBot:
                 patterns[intent] = regex_list
         
         self.intent_patterns = patterns
-        self.spend_category_intents = ['travel', 'education', 'fuel', 'rent', 'wallet', 'utilities', 'insurance', 'gaming', 'government', 'gold', 'jewellery']
+        self.spend_category_intents = ['travel', 'education', 'fuel', 'rent', 'wallet', 'utilities', 'insurance_spending', 'gaming', 'government', 'gold', 'jewellery']
 
     def detect_intent(self, query: str) -> Optional[str]:
         """Detect intent using regex pattern matching."""
@@ -192,7 +192,8 @@ class RichDataCreditCardBot:
             'fuel': [r'fuel', r'petrol', r'gas station'],
             'rent': [r'rent', r'rental'],
             'education': [r'education', r'school', r'college', r'university'],
-            'insurance': [r'insurance'],
+            'insurance_spending': [r'insurance.*payment', r'insurance.*spend', r'pay.*insurance', r'points.*insurance.*payment', r'points.*insurance.*spend', r'reward.*insurance.*payment', r'reward.*insurance.*spend'],
+            'insurance': [r'insurance.*benefit', r'insurance.*cover', r'insurance.*claim', r'travel.*insurance', r'accident.*insurance'],
             'government': [r'government', r'govt', r'tax payment'],
             'gaming': [r'gaming', r'game'],
             'wallet': [r'wallet', r'paytm', r'phonepe', r'gpay'],
@@ -425,7 +426,7 @@ class RichDataCreditCardBot:
             return context
             
         # If the intent is a surcharge fee category, gather comprehensive context including common terms
-        if intent in ['utilities', 'rent', 'fuel', 'education', 'gaming', 'wallet']:
+        if intent in ['utilities', 'rent', 'fuel', 'education', 'gaming', 'wallet', 'insurance_spending']:
             context = {}
             
             # If no specific cards mentioned, get all cards
@@ -504,7 +505,8 @@ class RichDataCreditCardBot:
                         bank_terms = self.bank_common_terms[bank]
                         # Check for surcharges in bank-specific common terms
                         if 'surcharge_fees' in bank_terms:
-                            surcharge_key = intent  # Use intent directly since we're looking for 'utilities', not 'utilities '
+                            # Map insurance_spending intent to insurance surcharge key
+                            surcharge_key = 'insurance' if intent == 'insurance_spending' else intent
                             if surcharge_key in bank_terms['surcharge_fees']:
                                 card_context['surcharge_info'] = {surcharge_key: bank_terms['surcharge_fees'][surcharge_key]}
                     # Check for rewards and their exclusions
@@ -529,8 +531,10 @@ class RichDataCreditCardBot:
                         # Include category-specific caps if they exist
                         if 'capping_per_statement_cycle' in rewards:
                             caps = rewards['capping_per_statement_cycle']
-                            if intent in caps:
-                                reward_info['category_cap'] = caps[intent]
+                            # Map insurance_spending intent to insurance cap key
+                            cap_key = 'insurance' if intent == 'insurance_spending' else intent
+                            if cap_key in caps:
+                                reward_info['category_cap'] = caps[cap_key]
                             reward_info['all_caps'] = caps
                             
                         card_context['rewards_info'] = reward_info
