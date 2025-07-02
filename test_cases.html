@@ -126,13 +126,13 @@
         <div class="row">
             <div class="col-md-3 col-6">
                 <div class="stats-card">
-                    <h3 class="display-4 text-primary">14</h3>
+                    <h3 class="display-4 text-primary">18</h3>
                     <p class="text-muted mb-0"><i class="fas fa-vial me-1"></i>Total Tests</p>
                 </div>
             </div>
             <div class="col-md-3 col-6">
                 <div class="stats-card">
-                    <h3 class="display-4 text-success">11</h3>
+                    <h3 class="display-4 text-success">15</h3>
                     <p class="text-muted mb-0"><i class="fas fa-check-circle me-1"></i>Passing</p>
                 </div>
             </div>
@@ -153,7 +153,7 @@
         <div class="row">
             <div class="col-12">
                 <div class="stats-card">
-                    <h3 class="display-4 text-success">79%</h3>
+                    <h3 class="display-4 text-success">83%</h3>
                     <p class="text-muted mb-0"><i class="fas fa-percentage me-1"></i>Overall Success Rate</p>
                 </div>
             </div>
@@ -444,6 +444,123 @@
             </div>
         </div>
 
+        <!-- Category: Education Spending -->
+        <div class="category-header">
+            <i class="fas fa-graduation-cap me-2"></i>
+            <h3 class="mb-0">Education Spending</h3>
+        </div>
+
+        <div class="test-case">
+            <div class="test-case-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Education Spending Comparison</h5>
+                <span class="badge badge-pass">PASSING</span>
+            </div>
+            <div class="card-body">
+                <div class="query-text">
+                    <strong>Query:</strong> Compare both cards for education spends
+                </div>
+                <div class="expected-response">
+                    <strong>Expected Response:</strong><br>
+                    <strong>ICICI Bank Emeralde Private Metal:</strong><br>
+                    ✅ Earns 6 points per ₹200 spent on education<br>
+                    📋 Cap: 1,000 points per statement cycle for education (MCC codes 8220, 8241, 8249, 8211, 8299, 8244, 8493, 8494, 7911)<br>
+                    💰 1% fee for education payments through third-party apps<br><br>
+                    
+                    <strong>Axis Bank Atlas:</strong><br>
+                    ✅ Earns 2 EDGE Miles per ₹100 spent on education<br>
+                    📋 No specific cap for education spending<br>
+                    💰 No special fees mentioned for education<br><br>
+                    
+                    <strong>Analysis by spend amount:</strong><br>
+                    • ₹30,000: ICICI wins (900 vs 600 points/miles)<br>
+                    • ₹50,000: Tie (both give 1000 due to ICICI cap)<br>
+                    • ₹100,000+: Axis wins (2000+ vs 1000 due to ICICI cap)
+                </div>
+            </div>
+        </div>
+
+        <div class="test-case">
+            <div class="test-case-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Small Education Spend (₹30,000)</h5>
+                <span class="badge badge-pass">PASSING</span>
+            </div>
+            <div class="card-body">
+                <div class="query-text">
+                    <strong>Query:</strong> I have ₹30,000 education fees to pay. Which card is better?
+                </div>
+                <div class="expected-response">
+                    <strong>Expected Response:</strong><br>
+                    <strong>For ₹30,000 education spend:</strong><br><br>
+                    
+                    <strong>ICICI Emeralde Private Metal:</strong><br>
+                    - Calculation: ₹30,000 ÷ ₹200 × 6 = 900 points<br>
+                    - Within the 1,000 point cap for education<br>
+                    - Value: 900 points = ₹900 (at ₹1 per point)<br><br>
+                    
+                    <strong>Axis Atlas:</strong><br>
+                    - Calculation: ₹30,000 ÷ ₹100 × 2 = 600 EDGE Miles<br>
+                    - No cap applicable<br>
+                    - Value: 600 miles = ₹600 (at ₹1 per mile)<br><br>
+                    
+                    <strong>Winner:</strong> ICICI EPM is better (900 vs 600 points/miles)
+                </div>
+            </div>
+        </div>
+
+        <div class="test-case">
+            <div class="test-case-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Large Education Spend (₹100,000)</h5>
+                <span class="badge badge-pass">PASSING</span>
+            </div>
+            <div class="card-body">
+                <div class="query-text">
+                    <strong>Query:</strong> I have ₹1,00,000 education fees to pay. Which card is better?
+                </div>
+                <div class="expected-response">
+                    <strong>Expected Response:</strong><br>
+                    <strong>For ₹1,00,000 education spend:</strong><br><br>
+                    
+                    <strong>ICICI Emeralde Private Metal:</strong><br>
+                    - Calculation: ₹1,00,000 ÷ ₹200 × 6 = 3,000 points (before cap)<br>
+                    - After cap: 1,000 points (capped at 1,000 for education)<br>
+                    - Value: 1,000 points = ₹1,000<br><br>
+                    
+                    <strong>Axis Atlas:</strong><br>
+                    - Calculation: ₹1,00,000 ÷ ₹100 × 2 = 2,000 EDGE Miles<br>
+                    - No cap applicable<br>
+                    - Value: 2,000 miles = ₹2,000<br><br>
+                    
+                    <strong>Winner:</strong> Axis Atlas is better (2,000 vs 1,000 points/miles)
+                </div>
+            </div>
+        </div>
+
+        <div class="test-case">
+            <div class="test-case-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Education Exclusion Check - Axis Atlas</h5>
+                <span class="badge badge-pass">PASSING</span>
+            </div>
+            <div class="card-body">
+                <div class="query-text">
+                    <strong>Query:</strong> Is education excluded from earning rewards on Axis Atlas?
+                </div>
+                <div class="expected-response">
+                    <strong>Expected Response:</strong><br>
+                    <strong>Axis Bank Atlas Credit Card:</strong><br>
+                    ❌ NO, education is NOT excluded from earning rewards<br><br>
+                    
+                    <strong>Exclusion List Check:</strong><br>
+                    Education is not mentioned in the exclusion categories. The excluded categories are: Insurance, Utilities, Government Institution, Rent/Property Management, Fuel, and Wallet Load/Cash Equivalent.<br><br>
+                    
+                    <strong>Education Earning Rate:</strong><br>
+                    ✅ Earns 2 EDGE Miles per ₹100 spent on education transactions<br>
+                    ✅ No specific cap for education spending<br><br>
+                    
+                    <strong>Conclusion:</strong> Education payments earn rewards at the general rate on Axis Atlas.
+                </div>
+            </div>
+        </div>
+
         <!-- Footer Notes -->
         <div class="footer-note">
             <h5><i class="fas fa-info-circle me-2"></i>Notes</h5>
@@ -469,5 +586,8 @@
 <p class="note">Last updated: 2025-07-01 14:19:08</p>
 <p class="note">Last updated: 2025-07-01 21:49:23</p>
 <p class="note">Last updated: 2025-07-01 21:53:13</p>
+<p class="note">Last updated: 2025-07-02 23:30:48</p>
+<p class="note">Last updated: 2025-07-03 00:10:34</p>
+<p class="note">Last updated: 2025-07-03 00:11:24</p>
 </body>
 </html> 

@@ -157,10 +157,18 @@ class RichDataCreditCardBot:
            re.search(r'miles.*partner', query_lower) or \
            re.search(r'transfer.*partner', query_lower) or \
            re.search(r'redeem.*airline', query_lower) or \
-           re.search(r'convert.*airline', query_lower):
+           re.search(r'convert.*airline', query_lower) or \
+           re.search(r'what.*do.*with.*\d+.*(points|miles)', query_lower) or \
+           re.search(r'what.*can.*\d+.*(points|miles)', query_lower) or \
+           re.search(r'use.*\d+.*(points|miles)', query_lower) or \
+           re.search(r'redeem.*\d+.*(points|miles)', query_lower) or \
+           re.search(r'\d+.*(points|miles).*redeem', query_lower) or \
+           re.search(r'\d+.*(points|miles).*use', query_lower) or \
+           re.search(r'\d+.*(points|miles).*worth', query_lower) or \
+           re.search(r'value.*\d+.*(points|miles)', query_lower):
             return 'miles_transfer'
         
-        # Check for reward comparison queries (specific)
+        # Check for reward calculation queries (broader patterns to catch more cases)
         if re.search(r'which.*card.*(more|better).*reward', query_lower) or \
            re.search(r'(compare|comparison).*reward', query_lower) or \
            re.search(r'spend.*\d+.*which.*card', query_lower) or \
@@ -175,7 +183,13 @@ class RichDataCreditCardBot:
            re.search(r'which.*better.*\d+.*(hotel|travel|airline|flight)', query_lower) or \
            re.search(r'which.*better.*for.*\d+.*(hotel|travel|airline|flight)', query_lower) or \
            re.search(r'better.*for.*\d+.*(hotel|travel|airline|flight)', query_lower) or \
-           re.search(r'which.*better.*for.*\d+', query_lower):
+           re.search(r'which.*better.*for.*\d+', query_lower) or \
+           re.search(r'reward.*points.*earned.*\d+.*spend', query_lower) or \
+           re.search(r'points.*earned.*\d+.*spend', query_lower) or \
+           re.search(r'miles.*earned.*\d+.*spend', query_lower) or \
+           re.search(r'\d+.*spend.*(axis|atlas|icici|emeralde)', query_lower) or \
+           re.search(r'(axis|atlas|icici|emeralde).*\d+.*spend', query_lower) or \
+           re.search(r'\d+.*(hotel|travel|airline|flight).*using.*(axis|atlas|icici|emeralde)', query_lower):
             return 'reward_comparison'
         
         # Check for specific spending categories first (more specific than general fees)
@@ -208,6 +222,7 @@ class RichDataCreditCardBot:
                 if re.search(pattern, query_lower):
                     # This maps a human-friendly key back to the actual JSON key
                     return intent.replace(' ', '_') 
+        
         return None
 
     def extract_card_names(self, query: str) -> List[str]:
@@ -240,13 +255,34 @@ class RichDataCreditCardBot:
     def extract_spend_amount(self, query: str) -> Optional[int]:
         """Extract spend amount from query."""
         import re
+        
+        # First preprocess currency abbreviations
+        processed_query = self.preprocess_currency_abbreviations(query)
+        
         # Look for numbers in the query, including ones with commas
-        numbers = re.findall(r'\d+(?:,\d+)*', query)
+        numbers = re.findall(r'\d+(?:,\d+)*', processed_query)
         if numbers:
             # Remove commas and convert to int, take the largest number
             cleaned_numbers = [int(num.replace(',', '')) for num in numbers]
             return max(cleaned_numbers)
         return None
+
+    def preprocess_currency_abbreviations(self, query: str) -> str:
+        """Convert Indian currency abbreviations to full numbers."""
+        import re
+        
+        # Define mappings for Indian currency abbreviations
+        abbreviations = {
+            r'(\d+(?:\.\d+)?)\s*cr\b': lambda m: str(int(float(m.group(1)) * 10000000)),  # crore
+            r'(\d+(?:\.\d+)?)\s*l\b': lambda m: str(int(float(m.group(1)) * 100000)),     # lakh  
+            r'(\d+(?:\.\d+)?)\s*k\b': lambda m: str(int(float(m.group(1)) * 1000)),       # thousand
+        }
+        
+        result = query.lower()
+        for pattern, replacement in abbreviations.items():
+            result = re.sub(pattern, replacement, result, flags=re.IGNORECASE)
+        
+        return result
 
     def calculate_rewards(self, card_name: str, spend_amount: int, category: str = None) -> Dict:
         """Calculate rewards for a specific card and spend amount, considering spending category."""
@@ -544,6 +580,14 @@ class RichDataCreditCardBot:
                             'capping_per_statement_cycle': rewards.get('capping_per_statement_cycle', {})
                         }
                         
+                        # Add unified earning rate for easier AI processing
+                        if rewards.get('rate_general'):
+                            card_context['rewards']['earning_rate'] = rewards.get('rate_general')
+                        elif rewards.get('others') and isinstance(rewards.get('others'), dict):
+                            others_rate = rewards.get('others', {}).get('rate')
+                            if others_rate:
+                                card_context['rewards']['earning_rate'] = others_rate
+                        
                     context[name] = card_context
             return context
         
@@ -595,10 +639,12 @@ class RichDataCreditCardBot:
                         
                         # Include comprehensive reward information for spending categories
                         reward_info = {
-                            'base_rate': rewards.get('others'),
                             'general_rate': rewards.get('rate_general'),
+                            'others_rate': rewards.get('others'),
                             'value_per_point': rewards.get('value_per_point'),
-                            'exclusions': exclusions
+                            'accrual_exclusions': exclusions,
+                            'spend_exclusion_policy': rewards.get('spend_exclusion_policy', {}),
+                            'capping_per_statement_cycle': rewards.get('capping_per_statement_cycle', {})
                         }
                         
                         # Include category-specific caps if they exist
@@ -771,56 +817,90 @@ Show your work clearly with calculations.
 """
         elif intent == 'miles_transfer':
             system_prompt = """
-You are a credit card expert answering questions about miles/points transfer and redemption options.
+You are a credit card expert answering questions about redemption options, transfer partners, and the value of points/miles.
 
-CRITICAL RULES FOR MILES TRANSFER & REDEMPTION:
+CRITICAL RULES FOR REDEMPTION & MILES TRANSFER:
 1. Answer ONLY based on the provided JSON data
-2. Check both miles_transfer AND redemption sections if available
-3. Always mention transfer limits, fees, and conversion rates
-4. List available airline and hotel partners clearly
-5. If no transfer data available, mention alternative redemption options
+2. If user asks "what can I do with X points/miles" - focus on REDEMPTION OPTIONS and VALUE
+3. Check redemption section first for: platforms, options, value per point/mile
+4. Check miles_transfer section for: transfer partners, conversion rates, limits
+5. Do NOT calculate backwards how much spend is needed to earn the points - that's not what they're asking
 
-RESPONSE FORMAT:
-6. For each card, provide: Transfer Partners + Limits + Fees + Conversion Rates
-7. Use clear section headers for each card
-8. Group partners by categories (airlines, hotels, etc.)
-9. If no transfer options, clearly state available redemption alternatives
-10. Mention annual limits and any restrictions
+REDEMPTION VALUE CALCULATION:
+6. If redemption section shows "value": "₹1 = 1 EDGE Mile", then X miles = ₹X value
+7. For ICICI: points may have different values for different redemptions (flight vouchers vs cashback)
+8. Always mention the redemption value clearly
 
-ICICI CARDS SPECIAL HANDLING:
-11. ICICI cards typically don't have airline transfer partnerships
-12. Focus on redemption options like flight vouchers, statement credit, etc.
-13. Clearly state "No direct airline transfer partnerships available"
-14. Provide alternative value propositions
+RESPONSE FORMAT FOR "WHAT CAN I DO WITH X POINTS/MILES":
+9. State the redemption value: "5000 EDGE Miles = ₹5000 value"
+10. List redemption options: Flights, Hotels, Experiences, etc.
+11. List transfer partners if available
+12. Mention platforms where redemption can be done
+13. Include any important limitations or caps
 
-Be precise, clear, and helpful based only on the provided data.
+TRANSFER PARTNERS FORMAT:
+14. Group partners by categories (airlines, hotels, etc.)
+15. Mention conversion rates and annual limits
+16. For each partner group, list the specific partners available
+
+Be helpful, specific, and focus on what they can actually DO with their existing points/miles.
 """
         elif intent in ['utilities', 'rent', 'fuel', 'education', 'gaming', 'wallet']:
             system_prompt = """
-You are a credit card expert answering questions about surcharge fees and rewards for specific spending categories like utilities, rent, fuel, etc.
+You are a credit card expert answering questions about surcharge fees and rewards for specific spending categories like utilities, rent, fuel, education, etc.
 
-CRITICAL RULES FOR SURCHARGE FEES & CATEGORY SPENDING:
+CRITICAL RULES FOR EXCLUSION CHECKING:
 1. Answer ONLY based on the provided JSON data
-2. Check both surcharge_fees AND rewards exclusions data
-3. Always mention fee thresholds clearly (e.g., "above ₹25,000/month")
-4. If a category is in accrual_exclusions, clearly state NO rewards are earned
-5. If there's a capping_per_statement_cycle for the category, mention the cap
+2. To check if a category earns rewards, look at the "accrual_exclusions" list
+3. A category earns rewards if it is NOT found in the "accrual_exclusions" list
+4. If a category is NOT in "accrual_exclusions", it DOES earn rewards at the specified rate
+5. Check "capping_per_statement_cycle" for any caps on specific categories
+
+STEP-BY-STEP EXCLUSION CHECK:
+6. For each card, examine the "accrual_exclusions" array carefully
+7. Look for the exact category name (e.g., "education", "utilities", "rent") in that array
+8. If the category is NOT found in the array, state "earns rewards"
+9. If the category IS found in the array, state "NO rewards (excluded)"
+10. For ICICI cards, check "capping_per_statement_cycle" for caps
+
+REWARD RATE DETECTION:
+11. Check for reward rates in this order:
+    - "earning_rate" field (unified rate for both cards)
+    - "general_rate" field (used by ICICI cards)
+    - "others_rate" field (used by Axis cards) - look for "rate" inside this object
+12. If "earning_rate" exists, use that - it's the unified rate field
+13. If "general_rate" is null but "others_rate" exists, use the rate from "others_rate"
+14. For Axis Atlas: "others_rate": {"rate": "2 EDGE Miles/₹100"} means 2 EDGE Miles per ₹100
+15. NEVER say "no general rate provided" if earning_rate or others_rate exists
+
+CONCRETE EXAMPLE FOR AXIS ATLAS:
+If you see this data structure:
+"earning_rate": "2 EDGE Miles/₹100",
+"general_rate": null,
+"others_rate": {
+  "rate": "2 EDGE Miles/₹100",
+  "effective_from": "2022-12-20"
+}
+Then the earning rate is: 2 EDGE Miles per ₹100 (from earning_rate field)
 
 RESPONSE FORMAT:
-6. For each card, provide: Fees (if any) + Rewards (if any, or clearly state if excluded)
-7. Use clear section headers for each card
-8. Be specific about thresholds and conditions
-9. If no fees mentioned, state "No surcharge fees"
-10. If rewards are excluded, state "NO rewards earned (excluded category)"
+16. For each card, clearly state: Fees + Reward Status + Rate (if applicable) + Caps (if applicable)
+17. Use clear section headers for each card
+18. Be explicit: "Education is NOT in exclusions, so it earns rewards" or "Education is in exclusions, so NO rewards"
+19. Show the actual earning rate if rewards are earned
+20. Mention any category caps from "capping_per_statement_cycle"
 
-EXCLUSION HANDLING:
-11. Check accrual_exclusions list for the spending category
-12. For ICICI: Common exclusions include rent, fuel, government, tax, EMI (utilities are NOT excluded but have caps)
-13. For Axis: Common exclusions include utilities, rent, fuel, government, insurance, etc.
-14. If excluded from rewards, clearly state this fact
-15. For ICICI: If utilities/grocery/education/insurance, check capping_per_statement_cycle for caps
+EXAMPLE LOGIC FOR EDUCATION:
+21. Axis Atlas: Check if "education" appears in accrual_exclusions → If NOT found → Check "earning_rate" → Earns 2 EDGE Miles per ₹100
+22. ICICI EPM: Check if "education" appears in accrual_exclusions → If NOT found → Check "general_rate" → Earns 6 points per ₹200, capped at 1000 points per cycle
 
-Be precise, clear, and helpful based only on the provided data.
+COMPARISON HANDLING:
+23. When comparing cards with different reward types (points vs miles), show both rates clearly
+24. Don't try to convert between points and miles unless explicit conversion rates are provided
+25. Focus on the earning rates, fees, and caps for each card
+26. Let the user decide which is better based on their redemption preferences
+
+Be precise, check the actual data carefully, and don't assume exclusions that aren't explicitly listed. Always check BOTH general_rate and others_rate fields.
 """
         elif intent == 'lounge_access':
             system_prompt = """
@@ -834,16 +914,16 @@ CRITICAL RULES FOR LOUNGE ACCESS:
 5. When comparing cards, provide a clear recommendation based on the user's needs
 
 COMPARISON FORMAT:
-6. Present information for each card clearly
-7. Highlight key differences (unlimited vs limited, guest costs, etc.)
-8. Provide a clear recommendation based on the query
-9. If guest access is mentioned, prioritize that information
+7. Present information for each card clearly
+8. Highlight key differences (unlimited vs limited, guest costs, etc.)
+9. Provide a clear recommendation based on the query
+10. If guest access is mentioned, prioritize that information
 
 INTERNATIONAL LOUNGE ACCESS FOCUS:
-10. For international lounge queries, focus on international benefits
-11. Mention Priority Pass or similar programs if available
-12. Always state guest charges if applicable
-13. Compare value proposition for frequent travelers
+11. For international lounge queries, focus on international benefits
+12. Mention Priority Pass or similar programs if available
+13. Always state guest charges if applicable
+14. Compare value proposition for frequent travelers
 
 Be helpful, specific, and provide actionable advice based only on the provided data.
 """

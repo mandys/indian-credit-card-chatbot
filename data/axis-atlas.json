@@ -131,6 +131,18 @@
         "rewards": {
           "non_encashable": true,
           "view_location": "Atlas Miles section of the Axis Bank Mobile Application",
+          "rate_general": "2 EDGE Miles/₹100",
+          "value_per_point": "₹1 per EDGE Mile",
+          "accrual_exclusions": [
+            "Gold/ Jewellery",
+            "Rent", 
+            "Wallet",
+            "Insurance",
+            "Fuel",
+            "Government Institution",
+            "Utilities",
+            "Telecom"
+          ],
           "travel": {
             "rate": "5 EDGE Miles/₹100",
             "categories": ["Travel EDGE", "Direct Airlines", "Direct Hotels"],

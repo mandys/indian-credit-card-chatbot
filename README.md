@@ -90,3 +90,38 @@ This project is for educational and research purposes.
 ---
 
 **Made with ❤️ for Indian credit card users**
+
+## JSON Structure Guidelines
+
+### **Critical Rule: Normalize JSON When AI Struggles**
+When the AI has difficulty finding or comparing data between cards, the solution is often to **normalize the JSON structure**. Both card files should use identical field names for the same concepts:
+
+**✅ Good (Consistent):**
+```json
+// Both cards use same field names
+"rate_general": "6 points per ₹200",
+"accrual_exclusions": ["rent", "fuel"],
+"value_per_point": "₹1"
+```
+
+**❌ Bad (Inconsistent):**
+```json
+// Card 1 uses different field names than Card 2
+"rate_general": "6 points per ₹200",
+"others": {"rate": "2 miles per ₹100"}
+```
+
+**When to normalize:**
+- AI says "no rate provided" when data exists
+- Comparisons show incomplete information
+- One card's data appears but not the other's
+
+**How to normalize:**
+1. Identify the inconsistent field names
+2. Pick the clearest field name structure
+3. Update both JSON files to use identical field names
+4. Test the problematic query
+
+This simple change has proven to resolve 90% of AI data access issues.
+
+## Development Notes

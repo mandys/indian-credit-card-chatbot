@@ -102,6 +102,30 @@ class TestRunner:
                 "query": "do we get points on government payments using icici epm and axis atlas",
                 "expected_keywords": ["excluded", "no rewards", "Government Institution", "government services"],
                 "expected_content": "both cards exclude government payments"
+            },
+            {
+                "category": "Education Spending",
+                "query": "Compare both cards for education spends",
+                "expected_keywords": ["6 points per ₹200", "2 EDGE Miles per ₹100", "1,000", "cap", "education"],
+                "expected_content": "comparison of both cards for education"
+            },
+            {
+                "category": "Education Spending",
+                "query": "I have ₹30,000 education fees to pay. Which card is better?",
+                "expected_keywords": ["900", "600", "ICICI", "better", "₹30,000"],
+                "expected_winner": "icici"
+            },
+            {
+                "category": "Education Spending", 
+                "query": "I have ₹1,00,000 education fees to pay. Which card is better?",
+                "expected_keywords": ["2,000", "1,000", "cap", "Axis", "better"],
+                "expected_winner": "axis"
+            },
+            {
+                "category": "Education Spending",
+                "query": "Is education excluded from earning rewards on Axis Atlas?",
+                "expected_keywords": ["not excluded", "2 EDGE Miles", "₹100", "education"],
+                "expected_content": "education not excluded, earns rewards"
             }
         ]
     
