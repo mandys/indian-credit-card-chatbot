@@ -152,6 +152,28 @@ st.markdown("""
         min-height: auto !important;
         height: auto !important;
         width: auto !important;
+        flex-shrink: 0 !important; /* Prevent buttons from shrinking */
+    }
+    
+    /* Ensure feedback buttons stay side by side on mobile */
+    @media (max-width: 768px) {
+        div[data-testid="column"]:has(.feedback-btn) {
+            min-width: 60px !important;
+            flex: 0 0 60px !important;
+        }
+        
+        /* Force thumbs buttons to stay horizontal */
+        .stButton:has([aria-label*="thumb"]) > button,
+        .stButton:has([title*="helpful"]) > button,
+        .stButton:has([title*="improvement"]) > button {
+            min-width: 50px !important;
+            width: 50px !important;
+            padding: 8px !important;
+            font-size: 1.2rem !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
     }
     
     .feedback-btn:hover {

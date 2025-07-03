@@ -5,11 +5,14 @@ A smart AI-powered chatbot for Indian credit cards, specifically designed for **
 ## ✨ Features
 
 - 🧠 **Smart Query Enhancement**: Automatically reformats user questions for better understanding
-- 💰 **Indian Currency Support**: Handles abbreviations like "2L", "20k", "1cr" naturally
+- 💰 **Enhanced Indian Currency Support**: Handles "lakh", "crore", "2L", "20k", "1cr" naturally
 - 🎯 **Accurate Calculations**: Precise reward calculations with exclusion and capping logic
-- 💬 **Clean Interface**: Modern chat UI with quick question buttons
-- 📱 **Mobile Friendly**: Responsive design that works on all devices
+- 💬 **Interactive Chat Interface**: Modern UI with collapsible quick questions
+- 📱 **Mobile Optimized**: Responsive design with touch-friendly controls
 - ⚡ **Fast Responses**: Optimized rule-based engine for quick answers
+- 👍 **User Feedback System**: Thumbs up/down with improvement suggestions
+- 📊 **Analytics Dashboard**: Built-in feedback monitoring and analytics
+- 🔄 **Real-time Updates**: Immediate feedback button display
 
 ## 🚀 Quick Start
 
@@ -36,33 +39,39 @@ A smart AI-powered chatbot for Indian credit cards, specifically designed for **
 The assistant understands natural language and Indian currency abbreviations:
 
 - ✅ "What are the annual fees?"
-- ✅ "If I spend 2L on flights, which card wins?"
+- ✅ "If I spend 5 lakh on flights, which card wins?"
 - ✅ "Do I get points on utility payments?"
 - ✅ "Compare reward rates for 50k hotel spending"
 - ✅ "Which card is better for tax payments?"
+- ✅ "Benefits of gold tier in Axis Atlas?"
+- ✅ "5 crore spending on ICICI EPM rewards?"
 
 ## 🏗️ Project Structure
 
 ```
 cc-features-chatbot/
-├── app.py                 # Main Streamlit application
-├── launch.sh             # Launch script
-├── requirements.txt      # Python dependencies
+├── app.py                    # Main Streamlit application with feedback system
+├── launch.sh                # Launch script
+├── requirements.txt         # Python dependencies
+├── feedback_dashboard.py    # Standalone feedback analytics dashboard
+├── feedback_log.json       # User feedback storage (auto-generated)
 ├── data/
-│   ├── axis-atlas.json   # Axis Bank Atlas card data
-│   └── icici-epm.json    # ICICI Emeralde Private Metal data
+│   ├── axis-atlas.json     # Axis Bank Atlas card data (normalized)
+│   └── icici-epm.json      # ICICI Emeralde Private Metal data (normalized)
 ├── utils/
-│   └── qa_engine.py      # Core QA engine with reward calculations
-└── test_cases.html       # Test cases for validation
+│   └── qa_engine.py        # Enhanced QA engine with reward calculations
+└── test_cases.html         # Comprehensive test cases for validation
 ```
 
 ## 🛠️ Technical Details
 
-- **Framework**: Streamlit for web interface
-- **AI Model**: OpenAI GPT-4 for natural language understanding
-- **Data Format**: Structured JSON with comprehensive card terms
-- **Calculations**: Rule-based engine for accurate reward computations
-- **Currency Support**: Regex-based preprocessing for Indian abbreviations
+- **Framework**: Streamlit for web interface with real-time updates
+- **AI Model**: OpenAI GPT-4 / Google Gemini for natural language understanding
+- **Data Format**: Normalized JSON structure for consistent processing
+- **Calculations**: Enhanced rule-based engine for accurate reward computations
+- **Currency Support**: Comprehensive regex patterns for Indian currency terms
+- **Feedback System**: JSON-based logging with built-in analytics dashboard
+- **Mobile Support**: CSS media queries for responsive design
 
 ## 🎯 Supported Cards
 
@@ -80,8 +89,26 @@ The system includes comprehensive test cases covering:
 - ✅ Reward calculations for different spending categories
 - ✅ Exclusion logic (tax, government, fuel payments)
 - ✅ Capping logic (utility, grocery, education, insurance)
-- ✅ Currency abbreviation parsing (2L → ₹200,000)
+- ✅ Enhanced currency parsing (5 lakh → ₹500,000, 2 crore → ₹20,000,000)
 - ✅ Multi-card comparisons and recommendations
+- ✅ Tier structure queries (Gold/Silver/Platinum benefits)
+- ✅ Hotel spending calculations with travel category rates
+- ✅ Feedback system functionality and data logging
+
+## 📊 Analytics & Monitoring
+
+### Built-in Feedback Dashboard
+Access the feedback analytics by adding `?admin=feedback` to your app URL:
+- **Feedback Metrics**: Total feedback count and satisfaction rate
+- **Recent Feedback**: View latest user feedback with improvement suggestions
+- **Data Export**: Download feedback data as CSV for analysis
+- **Query Patterns**: Analyze most common user queries
+
+### Feedback Features
+- **Thumbs Up/Down**: Quick feedback on each response
+- **Improvement Suggestions**: Detailed feedback for negative responses
+- **Session Tracking**: Basic session identification for feedback correlation
+- **Persistent Storage**: JSON-based logging for feedback analysis
 
 ## 📝 License
 
@@ -123,5 +150,24 @@ When the AI has difficulty finding or comparing data between cards, the solution
 4. Test the problematic query
 
 This simple change has proven to resolve 90% of AI data access issues.
+
+## 🚀 Recent Updates
+
+### v2.0 - Major UX & Analytics Update
+- **Enhanced Currency Parsing**: Full support for "lakh", "crore" in addition to "L", "cr"
+- **Collapsible Quick Questions**: Auto-collapse after first interaction with manual toggle
+- **Real-time Feedback System**: Thumbs up/down with improvement suggestions
+- **Built-in Analytics**: Feedback dashboard accessible via URL parameter
+- **Mobile Optimization**: Fixed button layouts and responsive design
+- **Tier Structure Support**: Proper handling of Gold/Silver/Platinum tier queries
+- **Travel Category Fix**: Hotel spending now uses correct 5x Axis Atlas rate
+- **JSON Normalization**: Unified data structure for consistent AI processing
+
+### Key Bug Fixes
+- ✅ Fixed "5 lakh" parsing as 5 instead of 500,000
+- ✅ Fixed delayed feedback button display (now immediate)
+- ✅ Fixed toggle button functionality for Quick Questions
+- ✅ Fixed mobile layout for thumbs up/down buttons
+- ✅ Fixed tier structure detection vs gold spending categories
 
 ## Development Notes
