@@ -291,9 +291,9 @@ class RichDataCreditCardBot:
         
         # Define mappings for Indian currency abbreviations
         abbreviations = {
-            r'(\d+(?:\.\d+)?)\s*cr\b': lambda m: str(int(float(m.group(1)) * 10000000)),  # crore
-            r'(\d+(?:\.\d+)?)\s*l\b': lambda m: str(int(float(m.group(1)) * 100000)),     # lakh  
-            r'(\d+(?:\.\d+)?)\s*k\b': lambda m: str(int(float(m.group(1)) * 1000)),       # thousand
+            r'(\d+(?:\.\d+)?)\s*(?:crore|crores|cr)\b': lambda m: str(int(float(m.group(1)) * 10000000)),  # crore
+            r'(\d+(?:\.\d+)?)\s*(?:lakh|lakhs|l)\b': lambda m: str(int(float(m.group(1)) * 100000)),       # lakh  
+            r'(\d+(?:\.\d+)?)\s*(?:thousand|k)\b': lambda m: str(int(float(m.group(1)) * 1000)),           # thousand
         }
         
         result = query.lower()

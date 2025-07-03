@@ -1,6 +1,8 @@
 import streamlit as st
 from utils.qa_engine import RichDataCreditCardBot
 import re
+import os
+import json
 
 # Page configuration
 st.set_page_config(
@@ -419,38 +421,18 @@ class QueryEnhancer:
         """Convert Indian currency abbreviations to proper numerical values."""
         import re
         
-        # Define currency abbreviation mappings
-        currency_mappings = {
-            'k': '000',        # 20k = 20,000
-            'l': '00000',      # 2L = 2,00,000 (2 lakhs)
-            'cr': '0000000',   # 1cr = 1,00,00,000 (1 crore)
-            'crore': '0000000'
+        # Define mappings for Indian currency abbreviations
+        abbreviations = {
+            r'(\d+(?:\.\d+)?)\s*(?:crore|crores|cr)\b': lambda m: str(int(float(m.group(1)) * 10000000)),  # crore
+            r'(\d+(?:\.\d+)?)\s*(?:lakh|lakhs|l)\b': lambda m: str(int(float(m.group(1)) * 100000)),       # lakh  
+            r'(\d+(?:\.\d+)?)\s*(?:thousand|k)\b': lambda m: str(int(float(m.group(1)) * 1000)),           # thousand
         }
         
-        # Pattern to match number + abbreviation (case insensitive)
-        pattern = r'(\d+(?:\.\d+)?)\s*([klcr]+|crore)\b'
+        result = query.lower()
+        for pattern, replacement in abbreviations.items():
+            result = re.sub(pattern, replacement, result, flags=re.IGNORECASE)
         
-        def replace_currency(match):
-            number = match.group(1)
-            suffix = match.group(2).lower()
-            
-            # Handle decimal numbers
-            if '.' in number:
-                base_num = float(number)
-                if suffix in currency_mappings:
-                    result = int(base_num * (10 ** len(currency_mappings[suffix])))
-                    return str(result)
-            else:
-                base_num = int(number)
-                if suffix in currency_mappings:
-                    result = base_num * (10 ** len(currency_mappings[suffix]))
-                    return str(result)
-            
-            return match.group(0)  # Return original if no mapping found
-        
-        # Apply the replacement
-        processed_query = re.sub(pattern, replace_currency, query, flags=re.IGNORECASE)
-        return processed_query
+        return result
     
     def enhance_query(self, query: str) -> str:
         """Enhance user query using proven patterns."""
@@ -535,6 +517,53 @@ def main():
     # Initialize bot and query enhancer
     bot = load_bot()
     enhancer = QueryEnhancer()
+    
+    # Admin feedback viewer (accessible via URL parameter)
+    query_params = st.query_params
+    if query_params.get("admin") == "feedback":
+        st.title("📊 Feedback Dashboard")
+        
+        # Load and display feedback
+        feedback_file = "feedback_log.json"
+        if os.path.exists(feedback_file):
+            try:
+                with open(feedback_file, 'r') as f:
+                    feedback_data = json.load(f)
+                
+                if feedback_data:
+                    st.metric("Total Feedback", len(feedback_data))
+                    
+                    # Show recent feedback
+                    st.subheader("Recent Feedback")
+                    for i, entry in enumerate(reversed(feedback_data[-10:])):  # Last 10
+                        with st.expander(f"{entry['feedback'].upper()}: {entry['query'][:80]}..."):
+                            st.write("**Query:**", entry['query'])
+                            st.write("**Response:**", entry['response'][:300] + "..." if len(entry['response']) > 300 else entry['response'])
+                            st.write("**Feedback:**", entry['feedback'])
+                            if entry.get('improvement_suggestion'):
+                                st.write("**Suggestion:**", entry['improvement_suggestion'])
+                            st.write("**Time:**", entry['timestamp'])
+                    
+                    # Download option
+                    import pandas as pd
+                    df = pd.DataFrame(feedback_data)
+                    csv = df.to_csv(index=False)
+                    st.download_button(
+                        "Download All Feedback as CSV",
+                        csv,
+                        "feedback_data.csv",
+                        "text/csv"
+                    )
+                else:
+                    st.info("No feedback data yet.")
+            except Exception as e:
+                st.error(f"Error loading feedback: {e}")
+        else:
+            st.info("No feedback file found.")
+        
+        st.markdown("---")
+        st.markdown("**Access URL:** Add `?admin=feedback` to your app URL to view this page")
+        return  # Stop here, don't show the main chatbot
     
     # Initialize chat history and UI state
     if "messages" not in st.session_state:
