@@ -96,7 +96,7 @@ class RichDataCreditCardBot:
             'rewards': [r'reward', r'point', r'earn rate', r'cashback'],
             'reward_comparison': [r'which card.*more reward', r'which.*better reward', r'compare reward', r'more reward', r'better reward', r'which card.*spend.*reward', r'reward.*comparison'],
             'milestones': [r'milestone'],
-            'tier_structure': [r'tier', r'status', 'level'],
+            'tier_structure': [r'tier', r'status', 'level', r'gold tier', r'silver tier', r'platinum tier', r'gold.*benefit', r'silver.*benefit', r'platinum.*benefit'],
             'lounge_access': [r'lounge', r'airport'],
             'miles_transfer': [r'miles transfer', r'partner', r'conversion'],
             'insurance_spending': [r'insurance.*payment', r'insurance.*spend', r'pay.*insurance', r'points.*insurance.*payment', r'points.*insurance.*spend', r'reward.*insurance.*payment', r'reward.*insurance.*spend'],
@@ -192,7 +192,25 @@ class RichDataCreditCardBot:
            re.search(r'\d+.*(hotel|travel|airline|flight).*using.*(axis|atlas|icici|emeralde)', query_lower):
             return 'reward_comparison'
         
-        # Check for specific spending categories first (more specific than general fees)
+        # Check for reward calculation queries first (must be before spending categories)
+        if (re.search(r'how many.*points.*earn', query_lower) or 
+            re.search(r'how many.*miles.*earn', query_lower) or
+            re.search(r'points.*earn.*spend', query_lower) or
+            re.search(r'miles.*earn.*spend', query_lower) or
+            re.search(r'spend.*\d+.*points', query_lower) or
+            re.search(r'spend.*\d+.*miles', query_lower) or
+            re.search(r'\d+.*spend.*points', query_lower) or
+            re.search(r'\d+.*spend.*miles', query_lower)):
+            return 'reward_calculation'
+        
+        # Check for tier-specific queries first (most specific)
+        if re.search(r'(gold|silver|platinum).*tier', query_lower) or \
+           re.search(r'tier.*(gold|silver|platinum)', query_lower) or \
+           re.search(r'(gold|silver|platinum).*benefit', query_lower) or \
+           re.search(r'benefit.*(gold|silver|platinum)', query_lower):
+            return 'tier_structure'
+        
+        # Check for specific spending categories (more specific than general fees)
         spending_category_checks = {
             'travel': [r'hotel', r'airline', r'flight', r'travel', r'booking', r'trip'],
             'utilities': [r'utilit(y|ies)', r'utility.*spend', r'utility.*charge', r'utility.*fee'],
@@ -204,7 +222,7 @@ class RichDataCreditCardBot:
             'government': [r'government', r'govt', r'tax payment'],
             'gaming': [r'gaming', r'game'],
             'wallet': [r'wallet', r'paytm', r'phonepe', r'gpay'],
-            'gold': [r'gold', r'jewellery', r'jewelry']
+            'gold': [r'gold.*jewellery', r'jewellery', r'jewelry', r'gold.*purchase', r'purchase.*gold', r'buy.*gold', r'buying.*gold']  # Gold/jewellery spending
         }
         
         for category, patterns in spending_category_checks.items():
@@ -482,6 +500,22 @@ class RichDataCreditCardBot:
                     }
             return context
         
+        # Handle reward calculation queries
+        if intent == 'reward_calculation':
+            context = {}
+            # If no specific cards mentioned, get all available cards
+            if not card_names:
+                card_names = list(self.cards_data.keys())
+            
+            for name in card_names:
+                if name in self.cards_data:
+                    card_info = self.cards_data[name]
+                    context[name] = {
+                        'rewards': card_info.get('rewards', {}),
+                        'name': name
+                    }
+            return context
+        
         # Handle general queries without specific cards - show all available cards' data
         if intent and not card_names:
             context = {}
@@ -535,7 +569,7 @@ class RichDataCreditCardBot:
             return context
             
         # If the intent is a surcharge fee category, gather comprehensive context including common terms
-        if intent in ['utilities', 'rent', 'fuel', 'education', 'gaming', 'wallet', 'insurance_spending', 'government']:
+        if intent in ['utilities', 'rent', 'fuel', 'education', 'gaming', 'wallet', 'insurance_spending', 'government', 'gold']:
             context = {}
             
             # If no specific cards mentioned, get all cards
@@ -687,6 +721,60 @@ class RichDataCreditCardBot:
         """
         Generates an answer using the configured API (Gemini or OpenAI) based on the relevant data.
         """
+        # Handle reward calculation queries with specific card rates
+        if intent == 'reward_calculation':
+            spend_amount = self.extract_spend_amount(query)
+            
+            # Detect spending category from the query
+            spending_category = None
+            query_lower = query.lower()
+            category_keywords = {
+                'hotel': ['hotel', 'hotels'],
+                'travel': ['travel', 'trip', 'airline', 'flight', 'flights'],
+                'dining': ['dining', 'restaurant', 'food'],
+                'fuel': ['fuel', 'petrol', 'gas'],
+                'utility': ['utility', 'utilities'],
+                'rent': ['rent'],
+                'education': ['education', 'school', 'college'],
+                'insurance': ['insurance'],
+                'government': ['government', 'govt', 'tax'],
+                'gaming': ['gaming', 'games'],
+                'wallet': ['wallet', 'paytm', 'phonepe', 'gpay'],
+                'gold': ['gold', 'jewellery', 'jewelry']
+            }
+            
+            for category, keywords in category_keywords.items():
+                if any(keyword in query_lower for keyword in keywords):
+                    spending_category = category
+                    break
+            
+            if spend_amount and relevant_data:
+                calculations = []
+                for card_name in relevant_data.keys():
+                    calc_result = self.calculate_rewards(card_name, spend_amount, spending_category)
+                    if 'error' not in calc_result:
+                        calculations.append(calc_result)
+                
+                if calculations:
+                    # Create a detailed response for single card
+                    response_text = f"For spending ₹{spend_amount:,}:\n\n"
+                    
+                    for calc in calculations:
+                        if 'points_earned' in calc:
+                            response_text += f"**{calc['card']}**: {calc['points_earned']} points\n"
+                            response_text += f"- Rate: {calc['rate']}\n"
+                            response_text += f"- Calculation: {calc['calculation']}\n"
+                        elif 'miles_earned' in calc:
+                            response_text += f"**{calc['card']}**: {calc['miles_earned']} miles\n"
+                            response_text += f"- Rate: {calc['rate']}\n"
+                            response_text += f"- Calculation: {calc['calculation']}\n"
+                    
+                    return response_text
+                else:
+                    return "I couldn't calculate rewards for the specified card. Please make sure you're asking about a supported card."
+            else:
+                return "Please specify a spend amount to calculate rewards (e.g., 'How many points would I earn for spending ₹50,000?')"
+        
         # Handle reward comparison queries with calculations
         if intent == 'reward_comparison':
             spend_amount = self.extract_spend_amount(query)
@@ -901,6 +989,27 @@ COMPARISON HANDLING:
 26. Let the user decide which is better based on their redemption preferences
 
 Be precise, check the actual data carefully, and don't assume exclusions that aren't explicitly listed. Always check BOTH general_rate and others_rate fields.
+"""
+        elif intent == 'tier_structure':
+            system_prompt = """
+You are a credit card expert answering questions about tier structures and tier-specific benefits.
+
+CRITICAL RULES FOR TIER QUERIES:
+1. Answer ONLY based on the provided JSON data
+2. Look for "tier_structure" section in the card data
+3. If user asks about specific tier (Gold, Silver, Platinum), focus on that tier's benefits
+4. Include spend thresholds, milestone rewards, lounge access, and any tier-specific benefits
+5. Be specific about the differences between tiers
+6. If comparing tiers, show a clear comparison
+
+RESPONSE FORMAT:
+7. Start with the requested tier's key benefits
+8. Include spend threshold required to achieve that tier
+9. List all benefits: milestone miles/points, annual bonus, lounge access
+10. Compare with other tiers if relevant
+11. Be clear about which benefits are tier-specific vs general card benefits
+
+Be helpful and specific about tier requirements and benefits.
 """
         elif intent == 'lounge_access':
             system_prompt = """

@@ -153,6 +153,7 @@
             "rate": "2 EDGE Miles/₹100",
             "effective_from": "2022-12-20"
           },
+          "earning_rate": "2 EDGE Miles/₹100",
           "credit_time": "Within 12 days",
           "spend_exclusion_policy": {
               "categories": [

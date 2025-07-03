@@ -100,6 +100,12 @@
           "rate_general": "6 ICICI Bank Reward Points on every ₹200 spent at all eligible retail transactions",
           "value_per_point": "Up to ₹1",
           "accrual_exclusions": ["government services (MCC 9405, 9222, 9399, 9402, 9211, 9313, 9311)", "tax (MCC 7276, 9311)", "rent (MCC 6513, 7014, 7407, 5271)", "fuel payments (MCC 5541, 5542, 1361, 3851, 5172, 5983, 9752, 5555)", "EMI conversions"],
+          "earning_rate": "6 points per ₹200",
+          "travel": {
+            "rate": "6 points per ₹200",
+            "categories": ["Travel", "Airlines", "Hotels"],
+            "note": "Uses general rate - no special travel category rate"
+          },
           "capping_per_statement_cycle": {
             "insurance": "5,000 Reward Points (MCC 6300, 5960)",
             "grocery": "1,000 Reward Points (MCC 5331, 5499, 5411)",

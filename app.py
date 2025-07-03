@@ -83,48 +83,128 @@ st.markdown("""
         }
     }
     
-    /* Quick questions section - mobile optimized */
+    /* Quick questions section - mobile optimized and collapsible */
     .quick-questions {
-        padding: 1rem;
-        margin-bottom: 1.5rem;
-        border-radius: 16px;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        border-radius: 12px;
         border: 1px solid rgba(59, 130, 246, 0.2);
         background: rgba(59, 130, 246, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .quick-questions.collapsed {
+        margin-bottom: 0.75rem;
+        padding: 0.5rem 0.75rem;
     }
     
     .quick-questions h3 {
-        font-size: 1rem !important;
-        margin-bottom: 1rem !important;
+        font-size: 0.9rem !important;
+        margin: 0.5rem 0 !important;
         text-align: center;
         font-weight: 600 !important;
         color: #3b82f6 !important;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .quick-questions.collapsed h3 {
+        margin: 0 !important;
+        font-size: 0.8rem !important;
     }
     
     @media (min-width: 768px) {
         .quick-questions h3 {
-            font-size: 1.2rem !important;
+            font-size: 1rem !important;
         }
+        .quick-questions.collapsed h3 {
+            font-size: 0.85rem !important;
+        }
+    }
+    
+    /* Feedback buttons styling */
+    .feedback-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        justify-content: flex-end;
+        opacity: 0.7;
+        transition: opacity 0.2s ease;
+    }
+    
+    .feedback-buttons:hover {
+        opacity: 1;
+    }
+    
+    .feedback-btn {
+        background: none !important;
+        border: 1px solid rgba(107, 114, 128, 0.3) !important;
+        border-radius: 8px !important;
+        padding: 6px 12px !important;
+        font-size: 0.8rem !important;
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        min-height: auto !important;
+        height: auto !important;
+        width: auto !important;
+    }
+    
+    .feedback-btn:hover {
+        background: rgba(59, 130, 246, 0.1) !important;
+        border-color: #3b82f6 !important;
+        transform: none !important;
+        box-shadow: none !important;
+    }
+    
+    .feedback-btn.positive {
+        color: #059669 !important;
+        border-color: rgba(5, 150, 105, 0.3) !important;
+    }
+    
+    .feedback-btn.positive:hover {
+        background: rgba(5, 150, 105, 0.1) !important;
+        border-color: #059669 !important;
+    }
+    
+    .feedback-btn.negative {
+        color: #dc2626 !important;
+        border-color: rgba(220, 38, 38, 0.3) !important;
+    }
+    
+    .feedback-btn.negative:hover {
+        background: rgba(220, 38, 38, 0.1) !important;
+        border-color: #dc2626 !important;
     }
     
     /* Button styling - mobile-first touch-friendly */
     .stButton > button {
         width: 100% !important;
         height: auto !important;
-        min-height: 48px !important; /* iOS touch target minimum */
-        padding: 12px 16px !important;
-        border-radius: 12px !important;
-        font-size: 0.9rem !important;
+        min-height: 44px !important; /* Reduced from 48px */
+        padding: 10px 14px !important; /* Reduced padding */
+        border-radius: 10px !important; /* Slightly smaller radius */
+        font-size: 0.85rem !important; /* Smaller text */
         font-weight: 500 !important;
-        text-align: left !important;
+        text-align: center !important; /* Center text for compact buttons */
         display: flex !important;
         align-items: center !important;
-        justify-content: flex-start !important;
+        justify-content: center !important; /* Center content */
         transition: all 0.2s ease !important;
         border: 2px solid transparent !important;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important; /* Smaller shadow */
         background: rgba(255, 255, 255, 0.95) !important;
         color: #374151 !important;
         backdrop-filter: blur(10px) !important;
+    }
+    
+    /* Compact button styling for collapsed state */
+    .quick-questions.collapsed .stButton > button {
+        min-height: 36px !important;
+        padding: 8px 12px !important;
+        font-size: 0.8rem !important;
     }
     
     /* Dark mode button styling */
@@ -162,10 +242,28 @@ st.markdown("""
     /* Desktop button improvements */
     @media (min-width: 768px) {
         .stButton > button {
-            min-height: 52px !important;
-            padding: 14px 18px !important;
-            font-size: 0.95rem !important;
+            min-height: 48px !important; /* Reduced from 52px */
+            padding: 12px 16px !important; /* Reduced padding */
+            font-size: 0.9rem !important; /* Slightly smaller */
         }
+        
+        .quick-questions.collapsed .stButton > button {
+            min-height: 40px !important;
+            padding: 10px 14px !important;
+            font-size: 0.85rem !important;
+        }
+    }
+    
+    /* Reduce chat message spacing for better density */
+    .stChatMessage {
+        padding: 0.5rem !important; /* Reduced from 0.75rem */
+        margin-bottom: 0.25rem !important; /* Reduced from 0.5rem */
+        border-radius: 12px !important;
+    }
+    
+    /* Reduce element container spacing */
+    .element-container {
+        margin-bottom: 0.5rem !important; /* Reduced spacing */
     }
     
     /* Chat input styling - mobile friendly */
@@ -385,6 +483,41 @@ class QueryEnhancer:
         # No pattern matched, return original
         return query
 
+def log_feedback(query: str, response: str, feedback_type: str, improvement_suggestion: str = ""):
+    """Log user feedback for analysis and improvement."""
+    import datetime
+    import json
+    import os
+    
+    feedback_entry = {
+        "timestamp": datetime.datetime.now().isoformat(),
+        "query": query,
+        "response": response[:500] + "..." if len(response) > 500 else response,  # Truncate long responses
+        "feedback": feedback_type,  # 'positive' or 'negative'
+        "improvement_suggestion": improvement_suggestion,
+        "session_id": id(st.session_state)  # Simple session tracking
+    }
+    
+    # Append to session state
+    st.session_state.feedback_log.append(feedback_entry)
+    
+    # Also log to file for persistence
+    feedback_file = "feedback_log.json"
+    try:
+        if os.path.exists(feedback_file):
+            with open(feedback_file, 'r') as f:
+                existing_feedback = json.load(f)
+        else:
+            existing_feedback = []
+        
+        existing_feedback.append(feedback_entry)
+        
+        with open(feedback_file, 'w') as f:
+            json.dump(existing_feedback, f, indent=2)
+    except Exception as e:
+        # Fail silently to not disrupt user experience
+        pass
+
 def main():
     """Enhanced main function with better UX."""
     
@@ -403,19 +536,33 @@ def main():
     bot = load_bot()
     enhancer = QueryEnhancer()
     
-    # Initialize chat history
+    # Initialize chat history and UI state
     if "messages" not in st.session_state:
         st.session_state.messages = []
         welcome_msg = "Hi! I'm your credit card expert. Ask me anything about Axis Atlas or ICICI Emeralde Private Metal cards. I can help with fees, rewards, benefits, eligibility, and more!"
         st.session_state.messages.append({"role": "assistant", "content": welcome_msg})
+    
+    if "quick_questions_expanded" not in st.session_state:
+        st.session_state.quick_questions_expanded = True
+    
+    if "feedback_log" not in st.session_state:
+        st.session_state.feedback_log = []
 
-    # Quick questions section (always show, but compact after first interaction)
+    # Quick questions section - collapsible after first interaction
     user_messages = [msg for msg in st.session_state.messages if msg["role"] == "user"]
     
-    # Show full quick questions initially, compact version after first interaction
+    # Auto-collapse after first user interaction (only if not manually toggled)
+    if len(user_messages) > 0 and "manual_toggle" not in st.session_state:
+        st.session_state.quick_questions_expanded = False
+    
+    # Collapsible header
+    expand_icon = "🔽" if st.session_state.quick_questions_expanded else "▶️"
+    collapse_class = "" if st.session_state.quick_questions_expanded else "collapsed"
+    
     if len(user_messages) == 0:
-        st.markdown("""
-        <div class="quick-questions">
+        # Show full quick questions initially
+        st.markdown(f"""
+        <div class="quick-questions {collapse_class}">
             <h3>💡 Popular Questions</h3>
         </div>
         """, unsafe_allow_html=True)
@@ -423,14 +570,14 @@ def main():
         col1, col2 = st.columns(2)
         
         quick_questions = [
-            ("💰 What are the annual fees?", "What are the annual fees for both cards?"),
-            ("🎁 What welcome benefits do I get?", "What are the welcome benefits for both cards?"),
-            ("✈️ Airport lounge access details?", "What are the airport lounge access benefits for both cards?"),
-            ("🏨 Hotel spending rewards?", "If I spend ₹100,000 on hotel bookings which card gives more rewards?"),
-            ("⚡ Utility payment rewards?", "Do I get reward points on utility payments with both cards?"),
-            ("🚗 Fuel payment rewards?", "Do I get reward points on fuel payments with both cards?"),
-            ("💳 Insurance payment rewards?", "Do I get reward points on insurance payments with both cards?"),
-            ("👤 Who can apply for these cards?", "What are the eligibility requirements for both cards?")
+            ("💰 Annual fees", "What are the annual fees for both cards?"),
+            ("🎁 Welcome benefits", "What are the welcome benefits for both cards?"),
+            ("✈️ Lounge access", "What are the airport lounge access benefits for both cards?"),
+            ("🏨 Hotel rewards", "If I spend ₹100,000 on hotel bookings which card gives more rewards?"),
+            ("⚡ Utility payments", "Do I get reward points on utility payments with both cards?"),
+            ("🚗 Fuel payments", "Do I get reward points on fuel payments with both cards?"),
+            ("💳 Insurance payments", "Do I get reward points on insurance payments with both cards?"),
+            ("👤 Eligibility", "What are the eligibility requirements for both cards?")
         ]
         
         for i, (button_text, query) in enumerate(quick_questions):
@@ -448,13 +595,112 @@ def main():
                     # Add assistant response
                     st.session_state.messages.append({"role": "assistant", "content": response})
                     st.rerun()
+    else:
+        # Show compact collapsible version after first interaction
+        header_col, toggle_col = st.columns([4, 1])
+        with header_col:
+            st.markdown(f"""
+            <div class="quick-questions {collapse_class}">
+                <h3>{expand_icon} Quick Questions</h3>
+            </div>
+            """, unsafe_allow_html=True)
         
-        st.markdown("---")
+        with toggle_col:
+            if st.button("Toggle", key="toggle_quick_questions", use_container_width=True):
+                st.session_state.quick_questions_expanded = not st.session_state.quick_questions_expanded
+                st.session_state.manual_toggle = True  # Mark as manually toggled
+                st.rerun()
+        
+        # Show questions only if expanded
+        if st.session_state.quick_questions_expanded:
+            col1, col2, col3, col4 = st.columns(4)
+            
+            compact_questions = [
+                ("💰", "What are the annual fees for both cards?"),
+                ("⚡", "Do I get reward points on utility payments with both cards?"),
+                ("🏨", "If I spend ₹100,000 on hotel bookings which card gives more rewards?"),
+                ("✈️", "What are the airport lounge access benefits for both cards?")
+            ]
+            
+            cols = [col1, col2, col3, col4]
+            for i, (button_text, query) in enumerate(compact_questions):
+                with cols[i]:
+                    if st.button(button_text, key=f"compact_{i}", use_container_width=True):
+                        # Add user message
+                        st.session_state.messages.append({"role": "user", "content": query})
+                        
+                        # Get immediate response
+                        enhanced_query = enhancer.enhance_query(query)
+                        with st.spinner("Getting answer..."):
+                            response = bot.get_answer(enhanced_query)
+                        
+                        # Add assistant response
+                        st.session_state.messages.append({"role": "assistant", "content": response})
+                        st.rerun()
 
-    # Display chat history
-    for message in st.session_state.messages:
+    # Display chat history with feedback buttons
+    for i, message in enumerate(st.session_state.messages):
         with st.chat_message(message["role"]):
             st.markdown(message["content"])
+            
+            # Add feedback buttons for all assistant messages except the welcome message
+            # Welcome message detection: first assistant message with greeting content
+            is_welcome_message = (message["role"] == "assistant" and 
+                                  i == 0 and 
+                                  "Hi!" in message["content"] and 
+                                  "credit card expert" in message["content"])
+            
+            show_feedback = message["role"] == "assistant" and not is_welcome_message
+            
+            if show_feedback:
+                col1, col2, col3 = st.columns([1, 1, 10])
+                
+                with col1:
+                    if st.button("👍", key=f"thumbs_up_{i}", help="This answer was helpful"):
+                        # Find the corresponding user message
+                        user_query = ""
+                        if i > 0 and st.session_state.messages[i-1]["role"] == "user":
+                            user_query = st.session_state.messages[i-1]["content"]
+                        
+                        log_feedback(user_query, message["content"], "positive")
+                        st.success("Thanks for the feedback! 😊")
+                        st.rerun()
+                
+                with col2:
+                    if st.button("👎", key=f"thumbs_down_{i}", help="This answer needs improvement"):
+                        # Store the message index for improvement suggestion
+                        st.session_state[f"show_improvement_{i}"] = True
+                        st.rerun()
+                
+                # Show improvement suggestion input if thumbs down was clicked
+                if st.session_state.get(f"show_improvement_{i}", False):
+                    with st.expander("💭 Help us improve", expanded=True):
+                        improvement_text = st.text_area(
+                            "What would you expect as the correct answer?",
+                            key=f"improvement_{i}",
+                            placeholder="Please describe what you were looking for or what the correct answer should be...",
+                            height=100
+                        )
+                        
+                        col_submit, col_cancel = st.columns(2)
+                        with col_submit:
+                            if st.button("Submit Feedback", key=f"submit_feedback_{i}"):
+                                # Find the corresponding user message
+                                user_query = ""
+                                if i > 0 and st.session_state.messages[i-1]["role"] == "user":
+                                    user_query = st.session_state.messages[i-1]["content"]
+                                
+                                log_feedback(user_query, message["content"], "negative", improvement_text)
+                                st.success("Thanks for the detailed feedback! We'll use this to improve. 🙏")
+                                
+                                # Hide the improvement input
+                                st.session_state[f"show_improvement_{i}"] = False
+                                st.rerun()
+                        
+                        with col_cancel:
+                            if st.button("Cancel", key=f"cancel_feedback_{i}"):
+                                st.session_state[f"show_improvement_{i}"] = False
+                                st.rerun()
 
     # Chat input
     if prompt := st.chat_input("Ask me anything about these credit cards..."):
@@ -479,40 +725,10 @@ def main():
             st.markdown(response)
         
         st.session_state.messages.append({"role": "assistant", "content": response})
+        
+        # Trigger rerun to show feedback buttons immediately
+        st.rerun()
 
-    # Compact quick questions (positioned after chat, before tips for better visibility)
-    if len(user_messages) > 0:
-        st.markdown("""
-        <div class="quick-questions">
-            <h3>💡 Quick Questions</h3>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # Show 4 most popular questions in a single row
-        col1, col2, col3, col4 = st.columns(4)
-        
-        compact_questions = [
-            ("💰 Fees", "What are the annual fees for both cards?"),
-            ("⚡ Utility", "Do I get reward points on utility payments with both cards?"),
-            ("🏨 Hotel", "If I spend ₹100,000 on hotel bookings which card gives more rewards?"),
-            ("✈️ Lounge", "What are the airport lounge access benefits for both cards?")
-        ]
-        
-        cols = [col1, col2, col3, col4]
-        for i, (button_text, query) in enumerate(compact_questions):
-            with cols[i]:
-                if st.button(button_text, key=f"compact_{i}", use_container_width=True):
-                    # Add user message
-                    st.session_state.messages.append({"role": "user", "content": query})
-                    
-                    # Get immediate response
-                    enhanced_query = enhancer.enhance_query(query)
-                    with st.spinner("Getting answer..."):
-                        response = bot.get_answer(enhanced_query)
-                    
-                    # Add assistant response
-                    st.session_state.messages.append({"role": "assistant", "content": response})
-                    st.rerun()
 
     # Tips section with rotating examples
     if len(user_messages) > 0:
