@@ -157,22 +157,42 @@ st.markdown("""
     
     /* Ensure feedback buttons stay side by side on mobile */
     @media (max-width: 768px) {
-        div[data-testid="column"]:has(.feedback-btn) {
+        /* Target the container holding feedback buttons */
+        div[data-testid="column"]:has(button[title*="helpful"]),
+        div[data-testid="column"]:has(button[title*="improvement"]) {
             min-width: 60px !important;
             flex: 0 0 60px !important;
+            max-width: 60px !important;
+        }
+        
+        /* Force feedback button containers to stay in a row */
+        .stColumns:has(button[title*="helpful"]) {
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 8px !important;
         }
         
         /* Force thumbs buttons to stay horizontal */
-        .stButton:has([aria-label*="thumb"]) > button,
-        .stButton:has([title*="helpful"]) > button,
-        .stButton:has([title*="improvement"]) > button {
+        button[title*="helpful"],
+        button[title*="improvement"] {
             min-width: 50px !important;
             width: 50px !important;
+            max-width: 50px !important;
             padding: 8px !important;
             font-size: 1.2rem !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            flex-shrink: 0 !important;
+        }
+        
+        /* Also target the Streamlit button wrapper */
+        .stButton:has(button[title*="helpful"]),
+        .stButton:has(button[title*="improvement"]) {
+            min-width: 50px !important;
+            width: 50px !important;
+            max-width: 50px !important;
+            flex: 0 0 50px !important;
         }
     }
     
@@ -704,7 +724,8 @@ def main():
             show_feedback = message["role"] == "assistant" and not is_welcome_message
             
             if show_feedback:
-                col1, col2, col3 = st.columns([1, 1, 10])
+                # Use smaller column ratios and ensure they stay horizontal
+                col1, col2, col3 = st.columns([0.8, 0.8, 8.4])
                 
                 with col1:
                     if st.button("👍", key=f"thumbs_up_{i}", help="This answer was helpful"):
