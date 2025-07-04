@@ -124,7 +124,7 @@ class TestRunner:
             {
                 "category": "Education Spending",
                 "query": "Is education excluded from earning rewards on Axis Atlas?",
-                "expected_keywords": ["not excluded", "2 EDGE Miles", "₹100", "education"],
+                "expected_keywords": ["not excluded", "earns rewards", "2 EDGE Miles", "₹100", "education"],
                 "expected_content": "education not excluded, earns rewards"
             },
             # New test cases for recent bug fixes

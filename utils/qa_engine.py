@@ -905,8 +905,9 @@ IMPORTANT: Address BOTH fees AND rewards in your response:
    - Look for the category name (e.g., "rent", "fuel", "government") in the exclusions list
    - For ICICI: check accrual_exclusions array (utilities are NOT excluded but have caps)
    - For Axis: check categories under spend_exclusion_policy (utilities ARE excluded)
-   - If category IS FOUND in exclusions → NO REWARDS (stop here)
-   - If category is NOT FOUND in exclusions → PROCEED to calculate rewards
+   - IMPORTANT: Only if category IS FOUND in exclusions → NO REWARDS (stop here)
+   - If category is NOT FOUND in exclusions → CATEGORY EARNS REWARDS (proceed to calculate)
+   - Note: Having a surcharge fee does NOT mean the category is excluded from rewards
    - For ICICI: utilities/grocery/education/insurance have capping_per_statement_cycle limits
 
 3. REWARDS CALCULATION (only if category earns rewards):
