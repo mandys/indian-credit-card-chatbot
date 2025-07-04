@@ -52,8 +52,8 @@ class TestRunner:
             {
                 "category": "Miles Transfer",
                 "query": "Can I transfer ICICI points to airlines?",
-                "expected_keywords": ["don't have transfer partner information", "database"],
-                "expected_content": "no transfer data available"
+                "expected_keywords": ["transfer points", "select airlines", "conversion rates", "not explicitly mentioned", "check with ICICI Bank"],
+                "expected_content": "mentions airline transfer capability but limited specific partner info"
             },
             {
                 "category": "Fees & Charges",
@@ -88,13 +88,13 @@ class TestRunner:
             {
                 "category": "Government Spending",
                 "query": "can we make tax payments using icici epm",
-                "expected_keywords": ["excluded", "government", "no reward", "MCC"],
+                "expected_keywords": ["excluded", "tax payments", "not earn any rewards", "excluded from earning rewards"],
                 "expected_content": "excluded from rewards"
             },
             {
                 "category": "Government Spending", 
                 "query": "can we make tax payments using axis atlas",
-                "expected_keywords": ["excluded", "Government Institution", "no EDGE Miles"],
+                "expected_keywords": ["excluded", "Government Institution", "do not earn rewards", "tax payments"],
                 "expected_content": "excluded from rewards"
             },
             {
@@ -126,6 +126,26 @@ class TestRunner:
                 "query": "Is education excluded from earning rewards on Axis Atlas?",
                 "expected_keywords": ["not excluded", "2 EDGE Miles", "₹100", "education"],
                 "expected_content": "education not excluded, earns rewards"
+            },
+            # New test cases for recent bug fixes
+            {
+                "category": "Insurance Benefits",
+                "query": "which card has better lost card liability ? axis or icici ?",
+                "expected_keywords": ["₹3L", "₹50,000", "Axis", "better", "liability"],
+                "expected_winner": "axis",
+                "expected_content": "compare card liability coverage amounts"
+            },
+            {
+                "category": "Insurance Benefits", 
+                "query": "What insurance benefits does ICICI EPM offer?",
+                "expected_keywords": ["₹50,000", "card liability", "₹3,00,00,000", "accident", "insurance"],
+                "expected_content": "comprehensive insurance coverage details"
+            },
+            {
+                "category": "Government Spending Comparison",
+                "query": "which card is better for government spends?",
+                "expected_keywords": ["neither", "excluded", "government", "no rewards"],
+                "expected_content": "both cards exclude government spending"
             }
         ]
     

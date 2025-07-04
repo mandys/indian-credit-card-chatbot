@@ -1,0 +1,122 @@
+================================================================================
+🧪 CREDIT CARD CHATBOT TEST REPORT
+================================================================================
+Generated: 2025-07-04 17:04:10
+Total Tests: 18
+✅ Passing: 9
+⚠️  Partial: 8
+❌ Failing: 1
+💥 Errors: 0
+📊 Overall Score: 77.3%
+
+
+📁 Hotel & Travel Spending
+------------------------------------------------------------
+
+✅ PASSING (Score: 0.83)
+Query: I have a 200,000 hotel spend coming up. Which card is better axis atlas or icici epm?
+Missing Keywords: 10,000, 6,000
+
+
+⚠️ PARTIAL (Score: 0.68)
+Query: Which card is better for direct airline bookings?
+Missing Keywords: axis atlas
+
+
+📁 Utility Spending
+------------------------------------------------------------
+
+⚠️ PARTIAL (Score: 0.70)
+Query: What are the utility charges on ICICI EPM?
+
+
+✅ PASSING (Score: 0.94)
+Query: Can I pay utility bills with these cards?
+
+
+📁 Reward Comparison
+------------------------------------------------------------
+
+⚠️ PARTIAL (Score: 0.75)
+Query: If I spend 100000 which card gives me more rewards?
+Missing Keywords: 3,000, 2,000
+
+
+📁 Miles Transfer
+------------------------------------------------------------
+
+❌ FAILING (Score: 0.20)
+Query: Can I transfer ICICI points to airlines?
+Missing Keywords: don't have transfer partner information, database
+Response: Yes, you can redeem ICICI Bank Reward Points for flights through the iMobile application or Internet Banking platform. The redemption value for flights and hotel vouchers is ₹1 per Reward Point. Addit...
+
+
+📁 Fees & Charges
+------------------------------------------------------------
+
+✅ PASSING (Score: 0.94)
+Query: What are the joining fees for both cards?
+
+
+📁 Lounge Access
+------------------------------------------------------------
+
+✅ PASSING (Score: 0.94)
+Query: How many lounge visits do I get with Axis Atlas?
+
+
+📁 Insurance Spending
+------------------------------------------------------------
+
+⚠️ PARTIAL (Score: 0.54)
+Query: do we get points on insurance payments done using icici epm
+Missing Keywords: 6 ICICI Bank Reward Points, ₹200, 5,000, cap
+
+
+✅ PASSING (Score: 0.81)
+Query: do we get points on insurance payments done using axis atlas
+Missing Keywords: no rewards
+
+
+✅ PASSING (Score: 0.94)
+Query: do we get points on insurance payments done by axis atlas or icici epm
+
+
+📁 Government Spending
+------------------------------------------------------------
+
+⚠️ PARTIAL (Score: 0.69)
+Query: can we make tax payments using icici epm
+Missing Keywords: no reward, MCC
+
+
+⚠️ PARTIAL (Score: 0.77)
+Query: can we make tax payments using axis atlas
+Missing Keywords: no EDGE Miles
+
+
+⚠️ PARTIAL (Score: 0.69)
+Query: do we get points on government payments using icici epm and axis atlas
+Missing Keywords: excluded, no rewards
+
+
+📁 Education Spending
+------------------------------------------------------------
+
+⚠️ PARTIAL (Score: 0.74)
+Query: Compare both cards for education spends
+Missing Keywords: 6 points per ₹200, 2 EDGE Miles per ₹100
+
+
+✅ PASSING (Score: 0.90)
+Query: I have ₹30,000 education fees to pay. Which card is better?
+Missing Keywords: better
+
+
+✅ PASSING (Score: 0.90)
+Query: I have ₹1,00,000 education fees to pay. Which card is better?
+Missing Keywords: better
+
+
+✅ PASSING (Score: 0.94)
+Query: Is education excluded from earning rewards on Axis Atlas?
