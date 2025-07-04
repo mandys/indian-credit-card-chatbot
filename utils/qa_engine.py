@@ -859,11 +859,16 @@ class RichDataCreditCardBot:
                     
                     # Check Axis Atlas
                     if 'Axis Bank Atlas Credit Card' in relevant_data:
-                        comparison_text += "**Axis Bank Atlas Credit Card**: 5 EDGE Miles per ₹100 spent (travel category, up to ₹2L monthly cap), then 2x for excess\n\n"
+                        comparison_text += "**Axis Bank Atlas Credit Card**: 5 EDGE Miles per ₹100 spent (travel category, up to ₹2L monthly cap), then 2x for excess\n"
+                        comparison_text += "- Return Value: 5% (5 miles worth ₹1 each per ₹100)\n\n"
                     
                     # Check ICICI EPM
                     if 'ICICI Bank Emeralde Private Metal Credit Card' in relevant_data:
-                        comparison_text += "**ICICI Bank Emeralde Private Metal Credit Card**: 6 points per ₹200 spent (general rate)\n\n"
+                        comparison_text += "**ICICI Bank Emeralde Private Metal Credit Card**: 6 points per ₹200 spent (general rate)\n"
+                        comparison_text += "- Return Value: 3% (6 points worth ₹1 each per ₹200)\n\n"
+                    
+                    comparison_text += "**Winner**: Axis Atlas is better for travel/airline bookings due to the 5% return rate vs ICICI's 3% return rate."
+                    return comparison_text
                         
                 elif spending_category == 'government' and relevant_data:
                     comparison_text = f"For government spending:\n\n"

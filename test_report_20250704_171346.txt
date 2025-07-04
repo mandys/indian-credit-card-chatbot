@@ -1,13 +1,13 @@
 ================================================================================
 🧪 CREDIT CARD CHATBOT TEST REPORT
 ================================================================================
-Generated: 2025-07-02 23:30:48
-Total Tests: 14
-✅ Passing: 8
-⚠️  Partial: 5
-❌ Failing: 1
+Generated: 2025-07-04 17:13:46
+Total Tests: 21
+✅ Passing: 17
+⚠️  Partial: 4
+❌ Failing: 0
 💥 Errors: 0
-📊 Overall Score: 81.3%
+📊 Overall Score: 87.2%
 
 
 📁 Hotel & Travel Spending
@@ -25,7 +25,7 @@ Query: Which card is better for direct airline bookings?
 📁 Utility Spending
 ------------------------------------------------------------
 
-✅ PASSING (Score: 0.94)
+⚠️ PARTIAL (Score: 0.70)
 Query: What are the utility charges on ICICI EPM?
 
 
@@ -44,18 +44,9 @@ Missing Keywords: 3,000, 2,000
 📁 Miles Transfer
 ------------------------------------------------------------
 
-❌ FAILING (Score: 0.44)
+⚠️ PARTIAL (Score: 0.74)
 Query: Can I transfer ICICI points to airlines?
-Missing Keywords: don't have transfer partner information, database
-Response: ### ICICI Bank Emeralde Private Metal Credit Card
-
-No direct airline transfer partnerships available.
-
-#### Redemption Options:
-- Flight vouchers
-- Statement balance (cashback)
-- Travel vouchers
-- Lif...
+Missing Keywords: not explicitly mentioned, check with ICICI Bank
 
 
 📁 Fees & Charges
@@ -79,9 +70,9 @@ Query: How many lounge visits do I get with Axis Atlas?
 Query: do we get points on insurance payments done using icici epm
 
 
-⚠️ PARTIAL (Score: 0.69)
+✅ PASSING (Score: 0.81)
 Query: do we get points on insurance payments done using axis atlas
-Missing Keywords: excluded, no rewards
+Missing Keywords: no rewards
 
 
 ✅ PASSING (Score: 0.94)
@@ -91,16 +82,55 @@ Query: do we get points on insurance payments done by axis atlas or icici epm
 📁 Government Spending
 ------------------------------------------------------------
 
-⚠️ PARTIAL (Score: 0.56)
+✅ PASSING (Score: 0.94)
 Query: can we make tax payments using icici epm
-Missing Keywords: government, no reward, MCC
 
 
-⚠️ PARTIAL (Score: 0.77)
+✅ PASSING (Score: 0.81)
 Query: can we make tax payments using axis atlas
-Missing Keywords: no EDGE Miles
+Missing Keywords: excluded
 
 
-⚠️ PARTIAL (Score: 0.69)
+✅ PASSING (Score: 0.81)
 Query: do we get points on government payments using icici epm and axis atlas
-Missing Keywords: excluded, no rewards
+Missing Keywords: no rewards
+
+
+📁 Education Spending
+------------------------------------------------------------
+
+⚠️ PARTIAL (Score: 0.74)
+Query: Compare both cards for education spends
+Missing Keywords: 6 points per ₹200, 2 EDGE Miles per ₹100
+
+
+✅ PASSING (Score: 0.90)
+Query: I have ₹30,000 education fees to pay. Which card is better?
+Missing Keywords: better
+
+
+✅ PASSING (Score: 0.80)
+Query: I have ₹1,00,000 education fees to pay. Which card is better?
+Missing Keywords: 2,000, better
+
+
+✅ PASSING (Score: 0.94)
+Query: Is education excluded from earning rewards on Axis Atlas?
+
+
+📁 Insurance Benefits
+------------------------------------------------------------
+
+✅ PASSING (Score: 0.94)
+Query: which card has better lost card liability ? axis or icici ?
+
+
+✅ PASSING (Score: 0.94)
+Query: What insurance benefits does ICICI EPM offer?
+
+
+📁 Government Spending Comparison
+------------------------------------------------------------
+
+✅ PASSING (Score: 0.94)
+Query: which card is better for government spends?
