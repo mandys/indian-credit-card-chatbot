@@ -135,6 +135,17 @@
           },
           "reference_sources": "[14, 28, 35, 36, 42-50]"
         },
+        "miles_transfer": {
+          "airline_partners": "No direct airline transfer partners available",
+          "redemption_method": "Points can be redeemed for flight bookings through iShop platform",
+          "flight_redemption": {
+            "coverage": "100% transaction value can be paid by Reward Points",
+            "value": "₹1 per Reward Point",
+            "platforms": ["iMobile application", "Internet Banking"],
+            "additional_earning": "Up to 18% with 6X Reward Points on flight bookings"
+          },
+          "limitations": "No traditional airline transfer partnerships, but full flight purchase capability through redemption"
+        },
         "milestones": {
           "easemytrip_air_travel_vouchers": {
             "value": "₹6,000 (Two vouchers worth ₹3,000 each)",

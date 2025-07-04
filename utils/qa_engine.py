@@ -158,6 +158,10 @@ class RichDataCreditCardBot:
            re.search(r'transfer.*partner', query_lower) or \
            re.search(r'redeem.*airline', query_lower) or \
            re.search(r'convert.*airline', query_lower) or \
+           re.search(r'use.*points.*flight', query_lower) or \
+           re.search(r'use.*points.*airline', query_lower) or \
+           re.search(r'redeem.*points.*flight', query_lower) or \
+           re.search(r'points.*flight.*booking', query_lower) or \
            re.search(r'what.*do.*with.*\d+.*(points|miles)', query_lower) or \
            re.search(r'what.*can.*\d+.*(points|miles)', query_lower) or \
            re.search(r'use.*\d+.*(points|miles)', query_lower) or \

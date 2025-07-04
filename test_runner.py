@@ -52,8 +52,8 @@ class TestRunner:
             {
                 "category": "Miles Transfer",
                 "query": "Can I transfer ICICI points to airlines?",
-                "expected_keywords": ["transfer points", "select airlines", "conversion rates", "not explicitly mentioned", "check with ICICI Bank"],
-                "expected_content": "mentions airline transfer capability but limited specific partner info"
+                "expected_keywords": ["iShop platform", "100%", "₹1 per Reward Point", "iMobile application", "flight bookings"],
+                "expected_content": "explains ICICI flight redemption through iShop with full payment capability"
             },
             {
                 "category": "Fees & Charges",
