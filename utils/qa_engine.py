@@ -179,7 +179,7 @@ class RichDataCreditCardBot:
            re.search(r'accident.*insurance', query_lower):
             return 'insurance'
         
-        # Check for reward calculation queries (broader patterns to catch more cases)
+        # Check for reward/spending category comparison queries (broader patterns to catch more cases)
         if re.search(r'which.*card.*(more|better).*reward', query_lower) or \
            re.search(r'(compare|comparison).*reward', query_lower) or \
            re.search(r'spend.*\d+.*which.*card', query_lower) or \
@@ -195,6 +195,9 @@ class RichDataCreditCardBot:
            re.search(r'which.*better.*for.*\d+.*(hotel|travel|airline|flight)', query_lower) or \
            re.search(r'better.*for.*\d+.*(hotel|travel|airline|flight)', query_lower) or \
            re.search(r'which.*better.*for.*\d+', query_lower) or \
+           re.search(r'which.*card.*better.*(fuel|rent|utility|utilities|education|government|govt|tax|gaming|wallet|gold|jewellery)', query_lower) or \
+           re.search(r'which.*better.*(fuel|rent|utility|utilities|education|government|govt|tax|gaming|wallet|gold|jewellery)', query_lower) or \
+           re.search(r'better.*for.*(fuel|rent|utility|utilities|education|government|govt|tax|gaming|wallet|gold|jewellery)', query_lower) or \
            re.search(r'reward.*points.*earned.*\d+.*spend', query_lower) or \
            re.search(r'points.*earned.*\d+.*spend', query_lower) or \
            re.search(r'miles.*earned.*\d+.*spend', query_lower) or \
@@ -850,7 +853,7 @@ class RichDataCreditCardBot:
                 else:
                     return "I couldn't calculate rewards for the specified cards. Please make sure you're asking about supported cards."
             elif not spend_amount and spending_category:
-                # Handle queries without spend amount but with specific category (like airline bookings)
+                # Handle queries without spend amount but with specific category
                 if spending_category in ['travel', 'hotel'] and relevant_data:
                     comparison_text = f"For {spending_category} spending:\n\n"
                     
@@ -861,8 +864,19 @@ class RichDataCreditCardBot:
                     # Check ICICI EPM
                     if 'ICICI Bank Emeralde Private Metal Credit Card' in relevant_data:
                         comparison_text += "**ICICI Bank Emeralde Private Metal Credit Card**: 6 points per ₹200 spent (general rate)\n\n"
+                        
+                elif spending_category == 'government' and relevant_data:
+                    comparison_text = f"For government spending:\n\n"
                     
-                    comparison_text += "**Winner**: Axis Atlas is better for travel/airline bookings due to the 5x rate for the travel category."
+                    # Check Axis Atlas
+                    if 'Axis Bank Atlas Credit Card' in relevant_data:
+                        comparison_text += "**Axis Bank Atlas Credit Card**: No rewards earned (government spending excluded)\n\n"
+                    
+                    # Check ICICI EPM  
+                    if 'ICICI Bank Emeralde Private Metal Credit Card' in relevant_data:
+                        comparison_text += "**ICICI Bank Emeralde Private Metal Credit Card**: No rewards earned (government services excluded)\n\n"
+                    
+                    comparison_text += "**Result**: Neither card offers rewards for government spending as both exclude this category."
                     return comparison_text
                 else:
                     return "Please specify a spend amount to compare rewards (e.g., 'If I spend ₹100,000 which card gives more rewards?')"
