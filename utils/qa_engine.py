@@ -168,6 +168,17 @@ class RichDataCreditCardBot:
            re.search(r'value.*\d+.*(points|miles)', query_lower):
             return 'miles_transfer'
         
+        # Check for insurance benefit comparisons BEFORE reward comparisons
+        if re.search(r'which.*card.*(better|more).*(insurance|liability|cover|protection)', query_lower) or \
+           re.search(r'which.*(better|more).*(insurance|liability|cover|protection)', query_lower) or \
+           re.search(r'compare.*(insurance|liability|cover|protection)', query_lower) or \
+           re.search(r'(insurance|liability|cover|protection).*(compare|comparison)', query_lower) or \
+           re.search(r'lost.*card.*liability', query_lower) or \
+           re.search(r'card.*liability.*cover', query_lower) or \
+           re.search(r'travel.*insurance', query_lower) or \
+           re.search(r'accident.*insurance', query_lower):
+            return 'insurance'
+        
         # Check for reward calculation queries (broader patterns to catch more cases)
         if re.search(r'which.*card.*(more|better).*reward', query_lower) or \
            re.search(r'(compare|comparison).*reward', query_lower) or \
@@ -176,7 +187,7 @@ class RichDataCreditCardBot:
            re.search(r'(icici|axis|atlas|emeralde).*(vs|versus).*(icici|axis|atlas|emeralde)', query_lower) or \
            re.search(r'which.*better.*spend.*\d+', query_lower) or \
            re.search(r'better.*reward.*\d+', query_lower) or \
-           re.search(r'which.*card.*better', query_lower) or \
+           re.search(r'which.*card.*better.*(reward|point|mile)', query_lower) or \
            re.search(r'\d+.*spend.*which.*card', query_lower) or \
            re.search(r'\d+.*(hotel|travel|airline|flight).*spend.*which.*card', query_lower) or \
            re.search(r'which.*card.*better.*(hotel|travel|airline|flight)', query_lower) or \
