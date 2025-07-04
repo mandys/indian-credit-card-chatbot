@@ -21,9 +21,13 @@ A smart AI-powered chatbot for Indian credit cards, specifically designed for **
    pip install -r requirements.txt
    ```
 
-2. **Set up API key:**
+2. **Set up API keys:**
    ```bash
-   export OPENAI_API_KEY="your-api-key-here"
+   # For Gemini (recommended)
+   export GEMINI_API_KEY="your-gemini-api-key-here"
+   
+   # For OpenAI (fallback)
+   export OPENAI_API_KEY="your-openai-api-key-here"
    ```
 
 3. **Launch the app:**
@@ -32,7 +36,7 @@ A smart AI-powered chatbot for Indian credit cards, specifically designed for **
    ```
 
 4. **Open your browser:**
-   Go to [http://localhost:8503](http://localhost:8503)
+   Go to [http://localhost:8501](http://localhost:8501)
 
 ## 💡 Usage Examples
 
@@ -54,7 +58,7 @@ cc-features-chatbot/
 ├── launch.sh                # Launch script
 ├── requirements.txt         # Python dependencies
 ├── feedback_dashboard.py    # Standalone feedback analytics dashboard
-├── feedback_log.json       # User feedback storage (auto-generated)
+├── feedback_log.json       # User feedback storage (auto-generated, not tracked)
 ├── data/
 │   ├── axis-atlas.json     # Axis Bank Atlas card data (normalized)
 │   └── icici-epm.json      # ICICI Emeralde Private Metal data (normalized)
@@ -66,7 +70,7 @@ cc-features-chatbot/
 ## 🛠️ Technical Details
 
 - **Framework**: Streamlit for web interface with real-time updates
-- **AI Model**: OpenAI GPT-4 / Google Gemini for natural language understanding
+- **AI Model**: Google Gemini (primary) / OpenAI GPT-4 (fallback) for natural language understanding
 - **Data Format**: Normalized JSON structure for consistent processing
 - **Calculations**: Enhanced rule-based engine for accurate reward computations
 - **Currency Support**: Comprehensive regex patterns for Indian currency terms
@@ -118,56 +122,23 @@ This project is for educational and research purposes.
 
 **Made with ❤️ for Indian credit card users**
 
-## JSON Structure Guidelines
-
-### **Critical Rule: Normalize JSON When AI Struggles**
-When the AI has difficulty finding or comparing data between cards, the solution is often to **normalize the JSON structure**. Both card files should use identical field names for the same concepts:
-
-**✅ Good (Consistent):**
-```json
-// Both cards use same field names
-"rate_general": "6 points per ₹200",
-"accrual_exclusions": ["rent", "fuel"],
-"value_per_point": "₹1"
-```
-
-**❌ Bad (Inconsistent):**
-```json
-// Card 1 uses different field names than Card 2
-"rate_general": "6 points per ₹200",
-"others": {"rate": "2 miles per ₹100"}
-```
-
-**When to normalize:**
-- AI says "no rate provided" when data exists
-- Comparisons show incomplete information
-- One card's data appears but not the other's
-
-**How to normalize:**
-1. Identify the inconsistent field names
-2. Pick the clearest field name structure
-3. Update both JSON files to use identical field names
-4. Test the problematic query
-
-This simple change has proven to resolve 90% of AI data access issues.
-
 ## 🚀 Recent Updates
 
 ### v2.0 - Major UX & Analytics Update
-- **Enhanced Currency Parsing**: Full support for "lakh", "crore" in addition to "L", "cr"
-- **Collapsible Quick Questions**: Auto-collapse after first interaction with manual toggle
+- **Enhanced Currency Parsing**: Full support for "lakh", "crore" notation
 - **Real-time Feedback System**: Thumbs up/down with improvement suggestions
 - **Built-in Analytics**: Feedback dashboard accessible via URL parameter
-- **Mobile Optimization**: Fixed button layouts and responsive design
-- **Tier Structure Support**: Proper handling of Gold/Silver/Platinum tier queries
-- **Travel Category Fix**: Hotel spending now uses correct 5x Axis Atlas rate
-- **JSON Normalization**: Unified data structure for consistent AI processing
+- **Mobile Optimization**: Responsive design for all device sizes
+- **Dual AI Support**: Gemini (primary) with OpenAI fallback
+- **Improved Calculations**: Enhanced reward calculation accuracy
 
-### Key Bug Fixes
-- ✅ Fixed "5 lakh" parsing as 5 instead of 500,000
-- ✅ Fixed delayed feedback button display (now immediate)
-- ✅ Fixed toggle button functionality for Quick Questions
-- ✅ Fixed mobile layout for thumbs up/down buttons
-- ✅ Fixed tier structure detection vs gold spending categories
+### Key Improvements
+- ✅ Fixed currency parsing for Indian notation (5 lakh → ₹500,000)
+- ✅ Enhanced mobile interface with touch-friendly controls
+- ✅ Added comprehensive feedback collection system
+- ✅ Improved reward calculation accuracy for all spending categories
+- ✅ Added support for tier structure queries (Gold/Silver/Platinum)
 
-## Development Notes
+## 🤝 Contributing
+
+Feel free to submit issues and enhancement requests! This project is designed to help Indian credit card users make informed decisions.

@@ -9,3 +9,13 @@ __pycache__/
 .vscode/
 .idea/ 
 .env
+
+# Ignore auto-generated files
+test_report_*.txt
+feedback_log.json
+CLAUDE.md
+
+# Ignore temporary files
+*.tmp
+*.log
+.DS_Store
