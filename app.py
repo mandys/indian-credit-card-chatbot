@@ -155,57 +155,44 @@ st.markdown("""
         flex-shrink: 0 !important; /* Prevent buttons from shrinking */
     }
     
-    /* Force feedback buttons to stay side by side on mobile using CSS Grid */
+    /* Force feedback buttons to stay side by side on mobile */
     @media (max-width: 768px) {
-        /* Override Streamlit's column behavior for feedback buttons */
+        /* Force feedback columns to stay horizontal */
         div[data-testid="stHorizontalBlock"]:has(button[title*="helpful"]) {
-            display: grid !important;
-            grid-template-columns: 50px 50px 1fr !important;
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: flex-end !important;
             gap: 8px !important;
-            justify-content: end !important;
             align-items: center !important;
         }
         
-        /* Force feedback button columns to fit the grid */
-        div[data-testid="column"]:has(.stButton button[title*="helpful"]) {
-            grid-column: 1 !important;
-            min-width: 50px !important;
-            max-width: 50px !important;
-            padding: 0 !important;
+        /* Make feedback button columns compact */
+        div[data-testid="column"]:has(button[title*="helpful"]),
+        div[data-testid="column"]:has(button[title*="improvement"]) {
+            flex: 0 0 60px !important;
+            min-width: 60px !important;
+            max-width: 60px !important;
+            padding: 0 4px !important;
         }
         
-        div[data-testid="column"]:has(.stButton button[title*="improvement"]) {
-            grid-column: 2 !important;
-            min-width: 50px !important;
-            max-width: 50px !important;
-            padding: 0 !important;
-        }
-        
-        /* Remaining column takes up the rest */
-        div[data-testid="column"]:not(:has(.stButton button[title*="helpful"])):not(:has(.stButton button[title*="improvement"])) {
-            grid-column: 3 !important;
-        }
-        
-        /* Style the button containers */
-        .stButton:has(button[title*="helpful"]),
-        .stButton:has(button[title*="improvement"]) {
-            width: 50px !important;
-            margin: 0 !important;
-        }
-        
-        /* Style the actual buttons */
+        /* Style feedback buttons */
         button[title*="helpful"],
         button[title*="improvement"] {
-            min-width: 50px !important;
             width: 50px !important;
-            max-width: 50px !important;
-            padding: 8px 4px !important;
+            height: 40px !important;
+            padding: 0 !important;
             font-size: 1.2rem !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
+            border-radius: 8px !important;
+        }
+        
+        /* Remove default button margins */
+        .stButton:has(button[title*="helpful"]),
+        .stButton:has(button[title*="improvement"]) {
             margin: 0 !important;
-            box-sizing: border-box !important;
+            width: 50px !important;
         }
     }
     
@@ -737,27 +724,20 @@ def main():
             show_feedback = message["role"] == "assistant" and not is_welcome_message
             
             if show_feedback:
-                # Create feedback buttons with CSS Grid to force horizontal layout
-                feedback_html = f"""
-                <div style="
-                    display: grid;
-                    grid-template-columns: 50px 50px 1fr;
-                    gap: 8px;
-                    margin-top: 8px;
-                    justify-content: end;
-                    align-items: center;
-                " id="feedback-grid-{i}">
-                    <div class="feedback-btn-container" style="grid-column: 1;"></div>
-                    <div class="feedback-btn-container" style="grid-column: 2;"></div>
-                    <div style="grid-column: 3;"></div>
+                # Simple approach: create buttons in a single row with spans
+                feedback_container = f"""
+                <div style="text-align: right; margin-top: 8px; clear: both;">
+                    <span id="feedback-buttons-{i}" style="display: inline-block;">
+                        <!-- Streamlit buttons will be inserted here -->
+                    </span>
                 </div>
                 """
-                st.markdown(feedback_html, unsafe_allow_html=True)
+                st.markdown(feedback_container, unsafe_allow_html=True)
                 
-                # Use minimal columns with fixed positioning
-                col1, col2, col3 = st.columns([1, 1, 8])
+                # Put both buttons in a single horizontal container
+                feedback_col1, feedback_col2 = st.columns([1, 1])
                 
-                with col1:
+                with feedback_col1:
                     if st.button("👍", key=f"thumbs_up_{i}", help="This answer was helpful"):
                         # Find the corresponding user message
                         user_query = ""
@@ -768,7 +748,7 @@ def main():
                         st.success("Thanks for the feedback! 😊")
                         st.rerun()
                 
-                with col2:
+                with feedback_col2:
                     if st.button("👎", key=f"thumbs_down_{i}", help="This answer needs improvement"):
                         # Store the message index for improvement suggestion
                         st.session_state[f"show_improvement_{i}"] = True
