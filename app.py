@@ -3,6 +3,10 @@ from utils.qa_engine import RichDataCreditCardBot
 import re
 import os
 import json
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Page configuration
 st.set_page_config(
