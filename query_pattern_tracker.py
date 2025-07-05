@@ -73,26 +73,38 @@ class QueryPatternTracker:
         return self.patterns
     
     def _load_query_analytics(self) -> List[Dict]:
-        """Load query analytics data."""
-        if not os.path.exists(self.analytics_file):
-            return []
-        
+        """Load query analytics data from persistent storage."""
         try:
-            with open(self.analytics_file, 'r') as f:
-                return json.load(f)
+            # Try persistent storage first (GitHub Gist)
+            from persistent_storage import storage_manager
+            return storage_manager.load_analytics_data()
         except Exception:
-            return []
+            # Fallback to local file
+            if not os.path.exists(self.analytics_file):
+                return []
+            
+            try:
+                with open(self.analytics_file, 'r') as f:
+                    return json.load(f)
+            except Exception:
+                return []
     
     def _load_feedback_data(self) -> List[Dict]:
-        """Load feedback data."""
-        if not os.path.exists(self.feedback_file):
-            return []
-        
+        """Load feedback data from persistent storage."""
         try:
-            with open(self.feedback_file, 'r') as f:
-                return json.load(f)
+            # Try persistent storage first (GitHub Gist)
+            from persistent_storage import storage_manager
+            return storage_manager.load_feedback_data()
         except Exception:
-            return []
+            # Fallback to local file
+            if not os.path.exists(self.feedback_file):
+                return []
+            
+            try:
+                with open(self.feedback_file, 'r') as f:
+                    return json.load(f)
+            except Exception:
+                return []
     
     def _identify_trending_queries(self, query_data: List[Dict]) -> List[Dict]:
         """Identify trending queries based on frequency and recency."""

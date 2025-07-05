@@ -751,6 +751,8 @@ def main():
                     st.markdown("**📈 Trending Queries:**")
                     for i, trend in enumerate(trending[:3], 1):
                         st.write(f"{i}. *{trend.get('sample_query', 'N/A')}* (asked {trend.get('total_count', 0)} times)")
+                else:
+                    st.info("📊 No trending queries yet - need more data!")
                 
                 # Show key insights
                 popular_intent = insights.get('most_popular_intent')
@@ -766,9 +768,12 @@ def main():
                     st.markdown("**💡 AI Recommendations:**")
                     for rec in recommendations[:3]:
                         st.info(rec)
+                else:
+                    st.info("💡 No specific recommendations yet - system is learning!")
                         
             except Exception as e:
-                st.warning("Pattern analysis temporarily unavailable")
+                st.error(f"Pattern analysis error: {str(e)}")
+                st.info("🔍 Debug: Check if persistent storage is working")
         
         return  # Stop here, don't show the main chatbot
     
