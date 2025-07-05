@@ -463,6 +463,29 @@ st.markdown("""
             padding: 0 0.5rem !important;
         }
     }
+    
+    /* Target feedback buttons specifically */
+    button[key*="thumbs_up"], button[key*="thumbs_down"] {
+        width: 44px !important;
+        height: 36px !important;
+        min-width: 44px !important;
+        max-width: 44px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border-radius: 8px !important;
+        font-size: 1.1rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* Force columns containing feedback buttons to stay side-by-side */
+    div[data-testid="column"]:has(button[key*="thumbs_"]) {
+        flex: 0 0 auto !important;
+        width: 50px !important;
+        min-width: 50px !important;
+        max-width: 50px !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
@@ -1020,26 +1043,40 @@ def main():
             show_feedback = message["role"] == "assistant" and not is_welcome_message
             
             if show_feedback:
-                # Use compact columns to keep buttons close together
-                # Create very narrow columns for buttons to stay side-by-side
-                left_spacer, feedback_col1, feedback_col2 = st.columns([10, 1, 1])
+                # Simple, reliable feedback using native Streamlit radio buttons
+                st.markdown("**Was this answer helpful?**")
                 
-                with feedback_col1:
-                    if st.button("👍", key=f"thumbs_up_{i}", help="This answer was helpful"):
-                        # Find the corresponding user message
-                        user_query = ""
-                        if i > 0 and st.session_state.messages[i-1]["role"] == "user":
-                            user_query = st.session_state.messages[i-1]["content"]
-                        
-                        log_feedback(user_query, message["content"], "positive")
-                        st.success("Thanks for the feedback! 😊")
-                        st.rerun()
+                feedback_choice = st.radio(
+                    "Rate this answer:",
+                    options=["👍 Yes, helpful", "👎 Needs improvement", "⭐ Skip rating"],
+                    index=2,  # Default to "Skip rating"
+                    key=f"feedback_radio_{i}",
+                    horizontal=True,
+                    label_visibility="collapsed"
+                )
                 
-                with feedback_col2:
-                    if st.button("👎", key=f"thumbs_down_{i}", help="This answer needs improvement"):
-                        # Store the message index for improvement suggestion
-                        st.session_state[f"show_improvement_{i}"] = True
-                        st.rerun()
+                # Handle feedback selection
+                if feedback_choice == "👍 Yes, helpful":
+                    # Close any open improvement forms for this message
+                    if f"show_improvement_{i}" in st.session_state:
+                        del st.session_state[f"show_improvement_{i}"]
+                    
+                    # Find the corresponding user message
+                    user_query = ""
+                    if i > 0 and st.session_state.messages[i-1]["role"] == "user":
+                        user_query = st.session_state.messages[i-1]["content"]
+                    
+                    log_feedback(user_query, message["content"], "positive")
+                    st.success("✅ Thanks for the positive feedback!")
+                    
+                elif feedback_choice == "👎 Needs improvement":
+                    # Show improvement form
+                    st.session_state[f"show_improvement_{i}"] = True
+                    
+                elif feedback_choice == "⭐ Skip rating":
+                    # Close any open improvement forms when user selects skip
+                    if f"show_improvement_{i}" in st.session_state:
+                        del st.session_state[f"show_improvement_{i}"]
                 
                 # Show improvement suggestion input if thumbs down was clicked
                 if st.session_state.get(f"show_improvement_{i}", False):
@@ -1068,7 +1105,11 @@ def main():
                         
                         with col_cancel:
                             if st.button("Cancel", key=f"cancel_feedback_{i}"):
+                                # Close the improvement form
                                 st.session_state[f"show_improvement_{i}"] = False
+                                # Clear the widget state to reset on next rerun
+                                if f"feedback_radio_{i}" in st.session_state:
+                                    del st.session_state[f"feedback_radio_{i}"]
                                 st.rerun()
 
     # Chat input
