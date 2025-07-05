@@ -18,20 +18,32 @@ class PersistentStorageManager:
     def __init__(self):
         self.storage_type = self._detect_storage_type()
         self.local_cache = {}
+        
+        # Debug info for troubleshooting
+        if st.secrets.get('GITHUB_TOKEN') and st.secrets.get('GIST_ID'):
+            st.sidebar.success(f"✅ Storage: {self.storage_type}")
+        else:
+            st.sidebar.warning(f"⚠️ Storage: {self.storage_type}")
     
     def _detect_storage_type(self) -> str:
         """Detect available storage type based on environment."""
         
-        # Check if running on Streamlit Cloud
-        if os.getenv('STREAMLIT_CLOUD', False) or 'streamlit.io' in os.getenv('HOSTNAME', ''):
-            # Try external storage options in order of preference
-            
-            # Option 1: GitHub Gist (simple and free)
-            if st.secrets.get('GITHUB_TOKEN') and st.secrets.get('GIST_ID'):
-                return 'github_gist'
-            
+        # Check if GitHub Gist secrets are available (prioritize this for Streamlit Cloud)
+        if st.secrets.get('GITHUB_TOKEN') and st.secrets.get('GIST_ID'):
+            return 'github_gist'
+        
+        # Check if running on Streamlit Cloud (various hostname patterns)
+        hostname = os.getenv('HOSTNAME', '').lower()
+        is_streamlit_cloud = (
+            os.getenv('STREAMLIT_CLOUD', False) or 
+            'streamlit' in hostname or 
+            'share.streamlit.io' in hostname or
+            any(cloud_indicator in hostname for cloud_indicator in ['heroku', 'railway', 'vercel'])
+        )
+        
+        if is_streamlit_cloud:
             # Option 2: Simple HTTP endpoint
-            elif st.secrets.get('STORAGE_ENDPOINT'):
+            if st.secrets.get('STORAGE_ENDPOINT'):
                 return 'http_storage'
             
             # Option 3: Session state only (temporary)
