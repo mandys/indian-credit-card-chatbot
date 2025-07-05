@@ -16,6 +16,7 @@ feedback_log.json
 query_analytics.json
 query_patterns.json
 CLAUDE.md
+CLAUDE_CODE_PROMPT.md
 
 # Ignore temporary files
 *.tmp
