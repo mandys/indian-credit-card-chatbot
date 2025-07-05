@@ -159,37 +159,98 @@ st.markdown("""
         flex-shrink: 0 !important; /* Prevent buttons from shrinking */
     }
     
-    /* Force feedback buttons to stay side by side on mobile */
+    /* Desktop: Keep buttons close together */
+    div[data-testid="stHorizontalBlock"]:has(button[key*="thumbs_"]) {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: flex-end !important;
+        gap: 12px !important;
+        padding: 0 !important;
+        margin: 8px 0 0 0 !important;
+    }
+    
+    /* Compact feedback button columns on desktop */
+    div[data-testid="column"]:has(button[key*="thumbs_up"]),
+    div[data-testid="column"]:has(button[key*="thumbs_down"]) {
+        flex: 0 0 60px !important;
+        min-width: 60px !important;
+        max-width: 60px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    
+    /* Style buttons for all screens */
+    button[key*="thumbs_up"],
+    button[key*="thumbs_down"] {
+        width: 56px !important;
+        height: 42px !important;
+        padding: 0 !important;
+        font-size: 1.2rem !important;
+        border-radius: 8px !important;
+        border: 1px solid rgba(107, 114, 128, 0.3) !important;
+        background: rgba(249, 250, 251, 0.8) !important;
+        transition: all 0.2s ease !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+    
+    /* Hover effects */
+    button[key*="thumbs_up"]:hover {
+        background: rgba(34, 197, 94, 0.1) !important;
+        border-color: rgba(34, 197, 94, 0.3) !important;
+        transform: scale(1.05) !important;
+    }
+    
+    button[key*="thumbs_down"]:hover {
+        background: rgba(239, 68, 68, 0.1) !important;
+        border-color: rgba(239, 68, 68, 0.3) !important;
+        transform: scale(1.05) !important;
+    }
+    
+    /* Mobile: Even more compact */
     @media (max-width: 768px) {
-        /* Force feedback columns to stay horizontal */
-        div[data-testid="stHorizontalBlock"]:has(button[title*="helpful"]) {
+        /* Target feedback button containers specifically */
+        div[data-testid="stHorizontalBlock"]:has(button[key*="thumbs_"]) {
             display: flex !important;
             flex-direction: row !important;
-            justify-content: flex-end !important;
-            gap: 8px !important;
             align-items: center !important;
+            gap: 8px !important;
+            padding: 0 !important;
+            margin: 8px 0 0 0 !important;
         }
         
-        /* Make feedback button columns compact */
-        div[data-testid="column"]:has(button[title*="helpful"]),
-        div[data-testid="column"]:has(button[title*="improvement"]) {
-            flex: 0 0 60px !important;
-            min-width: 60px !important;
-            max-width: 60px !important;
-            padding: 0 4px !important;
+        /* Make the spacer column compress on mobile */
+        div[data-testid="column"]:first-child:has(~ div[data-testid="column"] button[key*="thumbs_"]) {
+            flex: 1 !important;
+            min-width: 0 !important;
         }
         
-        /* Style feedback buttons */
-        button[title*="helpful"],
-        button[title*="improvement"] {
-            width: 50px !important;
+        /* Compact feedback button columns */
+        div[data-testid="column"]:has(button[key*="thumbs_up"]),
+        div[data-testid="column"]:has(button[key*="thumbs_down"]) {
+            flex: 0 0 50px !important;
+            min-width: 50px !important;
+            max-width: 50px !important;
+            padding: 0 !important;
+            margin: 0 !important;
+        }
+        
+        /* Style the buttons themselves */
+        button[key*="thumbs_up"],
+        button[key*="thumbs_down"] {
+            width: 48px !important;
             height: 40px !important;
             padding: 0 !important;
-            font-size: 1.2rem !important;
+            font-size: 1.1rem !important;
+            border-radius: 8px !important;
+            border: 1px solid rgba(107, 114, 128, 0.3) !important;
+            background: rgba(249, 250, 251, 0.8) !important;
+            transition: all 0.2s ease !important;
             display: flex !important;
             align-items: center !important;
             justify-content: center !important;
-            border-radius: 8px !important;
         }
         
         /* Remove default button margins */
@@ -959,18 +1020,9 @@ def main():
             show_feedback = message["role"] == "assistant" and not is_welcome_message
             
             if show_feedback:
-                # Simple approach: create buttons in a single row with spans
-                feedback_container = f"""
-                <div style="text-align: right; margin-top: 8px; clear: both;">
-                    <span id="feedback-buttons-{i}" style="display: inline-block;">
-                        <!-- Streamlit buttons will be inserted here -->
-                    </span>
-                </div>
-                """
-                st.markdown(feedback_container, unsafe_allow_html=True)
-                
-                # Put both buttons in a single horizontal container
-                feedback_col1, feedback_col2 = st.columns([1, 1])
+                # Use compact columns to keep buttons close together
+                # Create very narrow columns for buttons to stay side-by-side
+                left_spacer, feedback_col1, feedback_col2 = st.columns([10, 1, 1])
                 
                 with feedback_col1:
                     if st.button("👍", key=f"thumbs_up_{i}", help="This answer was helpful"):
