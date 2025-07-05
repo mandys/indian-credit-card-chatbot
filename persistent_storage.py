@@ -30,6 +30,8 @@ class PersistentStorageManager:
         
         # Check if GitHub Gist secrets are available (prioritize this for Streamlit Cloud)
         if st.secrets.get('GITHUB_TOKEN') and st.secrets.get('GIST_ID'):
+            # Force GitHub Gist if secrets are available
+            print(f"✅ GitHub Gist detected - Token: {st.secrets.get('GITHUB_TOKEN')[:10]}...")
             return 'github_gist'
         
         # Check if running on Streamlit Cloud (various hostname patterns)
