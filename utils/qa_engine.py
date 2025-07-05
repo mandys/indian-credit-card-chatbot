@@ -1331,9 +1331,9 @@ CONTEXT:
                 
                 with open(analytics_file, 'w') as f:
                     json.dump(existing_analytics, f, indent=2)
-        except Exception:
-            # Fail silently to not disrupt user experience
-            pass
+            except Exception:
+                # Fail silently to not disrupt user experience
+                pass
 
 if __name__ == '__main__':
     bot = RichDataCreditCardBot()
