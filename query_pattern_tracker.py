@@ -54,7 +54,6 @@ class QueryPatternTracker:
         seasonal_patterns = self._detect_seasonal_patterns(query_data)
         success_rates = self._calculate_query_success_rates(query_data, feedback_data)
         user_journeys = self._analyze_user_journeys(feedback_data)
-        query_complexity_trends = self._analyze_query_complexity(query_data, feedback_data)
         
         # Update patterns
         self.patterns.update({
@@ -63,7 +62,6 @@ class QueryPatternTracker:
             "seasonal_patterns": seasonal_patterns,
             "query_success_rates": success_rates,
             "user_journey_patterns": user_journeys,
-            "query_complexity_trends": query_complexity_trends,
             "last_updated": datetime.now().isoformat()
         })
         
@@ -119,7 +117,7 @@ class QueryPatternTracker:
             
             # Extract key terms for grouping
             key_terms = self._extract_key_terms(query)
-            group_key = ' '.join(sorted(key_terms))
+            group_key = ' '.join(sorted(key_terms)[:3])  # Use top 3 terms
             
             query_groups[group_key].append({
                 'query': item.get('query', ''),
@@ -175,4 +173,252 @@ class QueryPatternTracker:
         stop_words = {'i', 'a', 'an', 'the', 'is', 'are', 'was', 'were', 'will', 'would', 'should', 'could', 'can', 'do', 'does', 'did', 'have', 'has', 'had', 'for', 'in', 'on', 'at', 'to', 'from', 'with', 'by', 'of', 'and', 'or', 'but', 'if', 'then', 'what', 'how', 'when', 'where', 'why', 'which', 'who', 'whom'}
         
         # Extract words and numbers
-        words = re.findall(r'\\b[a-zA-Z]+\\b|\\d+', query.lower())\n        \n        # Filter out stop words and short words\n        key_terms = [word for word in words if word not in stop_words and len(word) > 2]\n        \n        # Add specific credit card terms\n        credit_terms = ['axis', 'atlas', 'icici', 'emeralde', 'epm', 'points', 'miles', 'rewards', 'lounge', 'fees', 'annual', 'joining']\n        for term in credit_terms:\n            if term in query.lower():\n                key_terms.append(term)\n        \n        return list(set(key_terms))  # Remove duplicates\n    \n    def _analyze_intent_popularity(self, query_data: List[Dict]) -> Dict[str, Dict]:\n        \"\"\"Analyze the popularity of different query intents.\"\"\"\n        intent_stats = defaultdict(lambda: {'count': 0, 'recent_count': 0, 'avg_processing_time': 0})\n        \n        now = datetime.now()\n        \n        for item in query_data:\n            analytics = item.get('analytics', {})\n            intent = analytics.get('intent_detected', 'unknown')\n            \n            if intent:\n                intent_stats[intent]['count'] += 1\n                \n                # Count recent queries (last 7 days)\n                try:\n                    query_time = datetime.fromisoformat(item.get('timestamp', ''))\n                    if (now - query_time).days <= 7:\n                        intent_stats[intent]['recent_count'] += 1\n                except:\n                    pass\n                \n                # Add processing time\n                processing_time = analytics.get('total_processing_time', 0)\n                if processing_time:\n                    current_avg = intent_stats[intent]['avg_processing_time']\n                    count = intent_stats[intent]['count']\n                    intent_stats[intent]['avg_processing_time'] = (current_avg * (count - 1) + processing_time) / count\n        \n        return dict(intent_stats)\n    \n    def _detect_seasonal_patterns(self, query_data: List[Dict]) -> Dict[str, List]:\n        \"\"\"Detect seasonal patterns in queries.\"\"\"\n        if not query_data:\n            return {}\n        \n        # Group queries by month and day of week\n        monthly_patterns = defaultdict(list)\n        weekly_patterns = defaultdict(list)\n        hourly_patterns = defaultdict(list)\n        \n        for item in query_data:\n            try:\n                timestamp = datetime.fromisoformat(item.get('timestamp', ''))\n                query = item.get('query', '')\n                \n                # Monthly patterns\n                month_key = timestamp.strftime('%B')\n                monthly_patterns[month_key].append(query)\n                \n                # Weekly patterns\n                day_key = timestamp.strftime('%A')\n                weekly_patterns[day_key].append(query)\n                \n                # Hourly patterns\n                hour_key = timestamp.hour\n                hourly_patterns[hour_key].append(query)\n                \n            except:\n                continue\n        \n        return {\n            'monthly': {month: len(queries) for month, queries in monthly_patterns.items()},\n            'weekly': {day: len(queries) for day, queries in weekly_patterns.items()},\n            'hourly': {hour: len(queries) for hour, queries in hourly_patterns.items()}\n        }\n    \n    def _calculate_query_success_rates(self, query_data: List[Dict], feedback_data: List[Dict]) -> Dict[str, float]:\n        \"\"\"Calculate success rates for different query types.\"\"\"\n        # Create a mapping of queries to feedback\n        feedback_map = {}\n        for feedback in feedback_data:\n            query = feedback.get('query', '')\n            feedback_type = feedback.get('feedback', '')\n            feedback_map[query] = feedback_type\n        \n        # Calculate success rates by intent\n        intent_success = defaultdict(lambda: {'total': 0, 'positive': 0})\n        \n        for item in query_data:\n            query = item.get('query', '')\n            analytics = item.get('analytics', {})\n            intent = analytics.get('intent_detected', 'unknown')\n            \n            if query in feedback_map:\n                intent_success[intent]['total'] += 1\n                if feedback_map[query] == 'positive':\n                    intent_success[intent]['positive'] += 1\n        \n        # Calculate percentages\n        success_rates = {}\n        for intent, stats in intent_success.items():\n            if stats['total'] > 0:\n                success_rates[intent] = (stats['positive'] / stats['total']) * 100\n        \n        return success_rates\n    \n    def _analyze_user_journeys(self, feedback_data: List[Dict]) -> List[Dict]:\n        \"\"\"Analyze user journey patterns within sessions.\"\"\"\n        if not feedback_data:\n            return []\n        \n        # Group by session\n        session_journeys = defaultdict(list)\n        \n        for feedback in feedback_data:\n            session_id = feedback.get('session_id')\n            if session_id:\n                session_journeys[session_id].append({\n                    'query': feedback.get('query', ''),\n                    'feedback': feedback.get('feedback', ''),\n                    'timestamp': feedback.get('timestamp', ''),\n                    'analytics': feedback.get('analytics', {})\n                })\n        \n        # Analyze journey patterns\n        journey_patterns = []\n        \n        for session_id, journey in session_journeys.items():\n            if len(journey) > 1:  # Multi-query sessions only\n                # Sort by timestamp\n                journey.sort(key=lambda x: x.get('timestamp', ''))\n                \n                # Extract pattern\n                query_sequence = []\n                satisfaction_trend = []\n                \n                for step in journey:\n                    analytics = step.get('analytics', {})\n                    intent = analytics.get('intent_detected', 'unknown')\n                    query_sequence.append(intent)\n                    satisfaction_trend.append(1 if step.get('feedback') == 'positive' else 0)\n                \n                journey_patterns.append({\n                    'session_id': session_id,\n                    'query_sequence': query_sequence,\n                    'satisfaction_trend': satisfaction_trend,\n                    'total_queries': len(journey),\n                    'satisfaction_rate': sum(satisfaction_trend) / len(satisfaction_trend) * 100\n                })\n        \n        return journey_patterns\n    \n    def _analyze_query_complexity(self, query_data: List[Dict], feedback_data: List[Dict]) -> Dict:\n        \"\"\"Analyze relationship between query complexity and user satisfaction.\"\"\"\n        # Create feedback mapping\n        feedback_map = {feedback.get('query', ''): feedback.get('feedback', '') for feedback in feedback_data}\n        \n        complexity_analysis = {\n            'simple_queries': {'total': 0, 'positive': 0},\n            'medium_queries': {'total': 0, 'positive': 0},\n            'complex_queries': {'total': 0, 'positive': 0}\n        }\n        \n        for item in query_data:\n            query = item.get('query', '')\n            analytics = item.get('analytics', {})\n            \n            # Determine complexity\n            query_complexity = analytics.get('query_complexity', {})\n            word_count = query_complexity.get('word_count', 0)\n            has_comparison = query_complexity.get('has_comparison', False)\n            has_calculation = query_complexity.get('has_calculation', False)\n            has_conditional = query_complexity.get('has_conditional', False)\n            \n            # Complexity scoring\n            complexity_score = word_count\n            if has_comparison:\n                complexity_score += 5\n            if has_calculation:\n                complexity_score += 5\n            if has_conditional:\n                complexity_score += 3\n            \n            # Categorize complexity\n            if complexity_score <= 10:\n                category = 'simple_queries'\n            elif complexity_score <= 20:\n                category = 'medium_queries'\n            else:\n                category = 'complex_queries'\n            \n            # Check if we have feedback for this query\n            if query in feedback_map:\n                complexity_analysis[category]['total'] += 1\n                if feedback_map[query] == 'positive':\n                    complexity_analysis[category]['positive'] += 1\n        \n        # Calculate success rates\n        for category in complexity_analysis:\n            total = complexity_analysis[category]['total']\n            if total > 0:\n                positive = complexity_analysis[category]['positive']\n                complexity_analysis[category]['success_rate'] = (positive / total) * 100\n            else:\n                complexity_analysis[category]['success_rate'] = 0\n        \n        return complexity_analysis\n    \n    def _save_patterns(self):\n        \"\"\"Save pattern analysis to file.\"\"\"\n        try:\n            with open(\"query_patterns.json\", 'w') as f:\n                json.dump(self.patterns, f, indent=2)\n        except Exception:\n            pass  # Fail silently\n    \n    def get_trending_insights(self) -> Dict:\n        \"\"\"Get current trending insights for display.\"\"\"\n        self.analyze_query_patterns()  # Refresh patterns\n        \n        insights = {\n            'top_trending_queries': self.patterns.get('trending_queries', [])[:5],\n            'most_popular_intent': None,\n            'peak_usage_time': None,\n            'query_success_summary': {}\n        }\n        \n        # Find most popular intent\n        popular_intents = self.patterns.get('popular_intents', {})\n        if popular_intents:\n            most_popular = max(popular_intents.items(), key=lambda x: x[1].get('count', 0))\n            insights['most_popular_intent'] = {\n                'intent': most_popular[0],\n                'count': most_popular[1].get('count', 0),\n                'avg_processing_time': most_popular[1].get('avg_processing_time', 0)\n            }\n        \n        # Find peak usage time\n        seasonal_patterns = self.patterns.get('seasonal_patterns', {})\n        hourly_patterns = seasonal_patterns.get('hourly', {})\n        if hourly_patterns:\n            peak_hour = max(hourly_patterns.items(), key=lambda x: x[1])\n            insights['peak_usage_time'] = {\n                'hour': peak_hour[0],\n                'query_count': peak_hour[1]\n            }\n        \n        # Success rate summary\n        success_rates = self.patterns.get('query_success_rates', {})\n        if success_rates:\n            avg_success_rate = sum(success_rates.values()) / len(success_rates)\n            best_intent = max(success_rates.items(), key=lambda x: x[1]) if success_rates else None\n            worst_intent = min(success_rates.items(), key=lambda x: x[1]) if success_rates else None\n            \n            insights['query_success_summary'] = {\n                'average_success_rate': avg_success_rate,\n                'best_performing_intent': best_intent,\n                'worst_performing_intent': worst_intent\n            }\n        \n        return insights\n    \n    def get_recommendations(self) -> List[str]:\n        \"\"\"Generate actionable recommendations based on patterns.\"\"\"\n        recommendations = []\n        insights = self.get_trending_insights()\n        \n        # Trending query recommendations\n        trending = insights.get('top_trending_queries', [])\n        if trending:\n            recommendations.append(f\"📈 Consider adding quick answers for trending topic: '{trending[0].get('sample_query', 'N/A')}' (asked {trending[0].get('total_count', 0)} times recently)\")\n        \n        # Success rate recommendations\n        success_summary = insights.get('query_success_summary', {})\n        worst_intent = success_summary.get('worst_performing_intent')\n        if worst_intent and worst_intent[1] < 70:  # Less than 70% success rate\n            recommendations.append(f\"⚠️ Improve responses for '{worst_intent[0]}' queries (only {worst_intent[1]:.1f}% satisfaction rate)\")\n        \n        # Complexity recommendations\n        complexity_trends = self.patterns.get('query_complexity_trends', {})\n        complex_success = complexity_trends.get('complex_queries', {}).get('success_rate', 0)\n        if complex_success < 60:\n            recommendations.append(\"🧠 Complex queries have lower satisfaction. Consider simplifying responses or adding clarifying questions.\")\n        \n        # Usage pattern recommendations\n        peak_time = insights.get('peak_usage_time')\n        if peak_time:\n            recommendations.append(f\"⏰ Peak usage at hour {peak_time['hour']}. Consider monitoring system performance during this time.\")\n        \n        # Popular intent recommendations\n        popular_intent = insights.get('most_popular_intent')\n        if popular_intent and popular_intent['avg_processing_time'] > 3000:  # > 3 seconds\n            recommendations.append(f\"🚀 Optimize '{popular_intent['intent']}' responses - they're popular but slow (avg {popular_intent['avg_processing_time']:.0f}ms)\")\n        \n        return recommendations if recommendations else [\"✅ No specific recommendations - system performing well!\"]\n\n\nif __name__ == \"__main__\":\n    # Example usage\n    tracker = QueryPatternTracker()\n    patterns = tracker.analyze_query_patterns()\n    insights = tracker.get_trending_insights()\n    recommendations = tracker.get_recommendations()\n    \n    print(\"Query Pattern Analysis Results:\")\n    print(f\"Trending Queries: {len(patterns.get('trending_queries', []))}\")\n    print(f\"Popular Intents: {len(patterns.get('popular_intents', {}))}\")\n    print(f\"Recommendations: {len(recommendations)}\")"
+        words = re.findall(r'\b[a-zA-Z]+\b|\d+', query.lower())
+        
+        # Filter out stop words and short words
+        key_terms = [word for word in words if word not in stop_words and len(word) > 2]
+        
+        # Add specific credit card terms
+        credit_terms = ['axis', 'atlas', 'icici', 'emeralde', 'epm', 'points', 'miles', 'rewards', 'lounge', 'fees', 'annual', 'joining']
+        for term in credit_terms:
+            if term in query.lower():
+                key_terms.append(term)
+        
+        return list(set(key_terms))  # Remove duplicates
+    
+    def _analyze_intent_popularity(self, query_data: List[Dict]) -> Dict[str, Dict]:
+        """Analyze the popularity of different query intents."""
+        intent_stats = defaultdict(lambda: {'count': 0, 'recent_count': 0, 'avg_processing_time': 0})
+        
+        now = datetime.now()
+        
+        for item in query_data:
+            analytics = item.get('analytics', {})
+            intent = analytics.get('intent_detected', 'unknown')
+            
+            if intent:
+                intent_stats[intent]['count'] += 1
+                
+                # Count recent queries (last 7 days)
+                try:
+                    query_time = datetime.fromisoformat(item.get('timestamp', ''))
+                    if (now - query_time).days <= 7:
+                        intent_stats[intent]['recent_count'] += 1
+                except:
+                    pass
+                
+                # Add processing time
+                processing_time = analytics.get('total_processing_time', 0)
+                if processing_time:
+                    current_avg = intent_stats[intent]['avg_processing_time']
+                    count = intent_stats[intent]['count']
+                    intent_stats[intent]['avg_processing_time'] = (current_avg * (count - 1) + processing_time) / count
+        
+        return dict(intent_stats)
+    
+    def _detect_seasonal_patterns(self, query_data: List[Dict]) -> Dict[str, List]:
+        """Detect seasonal patterns in queries."""
+        if not query_data:
+            return {}
+        
+        # Group queries by month and day of week
+        monthly_patterns = defaultdict(list)
+        weekly_patterns = defaultdict(list)
+        hourly_patterns = defaultdict(list)
+        
+        for item in query_data:
+            try:
+                timestamp = datetime.fromisoformat(item.get('timestamp', ''))
+                query = item.get('query', '')
+                
+                # Monthly patterns
+                month_key = timestamp.strftime('%B')
+                monthly_patterns[month_key].append(query)
+                
+                # Weekly patterns
+                day_key = timestamp.strftime('%A')
+                weekly_patterns[day_key].append(query)
+                
+                # Hourly patterns
+                hour_key = timestamp.hour
+                hourly_patterns[hour_key].append(query)
+                
+            except:
+                continue
+        
+        return {
+            'monthly': {month: len(queries) for month, queries in monthly_patterns.items()},
+            'weekly': {day: len(queries) for day, queries in weekly_patterns.items()},
+            'hourly': {hour: len(queries) for hour, queries in hourly_patterns.items()}
+        }
+    
+    def _calculate_query_success_rates(self, query_data: List[Dict], feedback_data: List[Dict]) -> Dict[str, float]:
+        """Calculate success rates for different query types."""
+        # Create a mapping of queries to feedback
+        feedback_map = {}
+        for feedback in feedback_data:
+            query = feedback.get('query', '')
+            feedback_type = feedback.get('feedback', '')
+            feedback_map[query] = feedback_type
+        
+        # Calculate success rates by intent
+        intent_success = defaultdict(lambda: {'total': 0, 'positive': 0})
+        
+        for item in query_data:
+            query = item.get('query', '')
+            analytics = item.get('analytics', {})
+            intent = analytics.get('intent_detected', 'unknown')
+            
+            if query in feedback_map:
+                intent_success[intent]['total'] += 1
+                if feedback_map[query] == 'positive':
+                    intent_success[intent]['positive'] += 1
+        
+        # Calculate percentages
+        success_rates = {}
+        for intent, stats in intent_success.items():
+            if stats['total'] > 0:
+                success_rates[intent] = (stats['positive'] / stats['total']) * 100
+        
+        return success_rates
+    
+    def _analyze_user_journeys(self, feedback_data: List[Dict]) -> List[Dict]:
+        """Analyze user journey patterns within sessions."""
+        if not feedback_data:
+            return []
+        
+        # Group by session
+        session_journeys = defaultdict(list)
+        
+        for feedback in feedback_data:
+            session_id = feedback.get('session_id')
+            if session_id:
+                session_journeys[session_id].append({
+                    'query': feedback.get('query', ''),
+                    'feedback': feedback.get('feedback', ''),
+                    'timestamp': feedback.get('timestamp', ''),
+                    'analytics': feedback.get('analytics', {})
+                })
+        
+        # Analyze journey patterns
+        journey_patterns = []
+        
+        for session_id, journey in session_journeys.items():
+            if len(journey) > 1:  # Multi-query sessions only
+                # Sort by timestamp
+                journey.sort(key=lambda x: x.get('timestamp', ''))
+                
+                # Extract pattern
+                query_sequence = []
+                satisfaction_trend = []
+                
+                for step in journey:
+                    analytics = step.get('analytics', {})
+                    intent = analytics.get('intent_detected', 'unknown')
+                    query_sequence.append(intent)
+                    satisfaction_trend.append(1 if step.get('feedback') == 'positive' else 0)
+                
+                journey_patterns.append({
+                    'session_id': session_id,
+                    'query_sequence': query_sequence,
+                    'satisfaction_trend': satisfaction_trend,
+                    'total_queries': len(journey),
+                    'satisfaction_rate': sum(satisfaction_trend) / len(satisfaction_trend) * 100
+                })
+        
+        return journey_patterns
+    
+    def _save_patterns(self):
+        """Save pattern analysis to file."""
+        try:
+            with open("query_patterns.json", 'w') as f:
+                json.dump(self.patterns, f, indent=2)
+        except Exception:
+            pass  # Fail silently
+    
+    def get_trending_insights(self) -> Dict:
+        """Get current trending insights for display."""
+        self.analyze_query_patterns()  # Refresh patterns
+        
+        insights = {
+            'top_trending_queries': self.patterns.get('trending_queries', [])[:5],
+            'most_popular_intent': None,
+            'peak_usage_time': None,
+            'query_success_summary': {}
+        }
+        
+        # Find most popular intent
+        popular_intents = self.patterns.get('popular_intents', {})
+        if popular_intents:
+            most_popular = max(popular_intents.items(), key=lambda x: x[1].get('count', 0))
+            insights['most_popular_intent'] = {
+                'intent': most_popular[0],
+                'count': most_popular[1].get('count', 0),
+                'avg_processing_time': most_popular[1].get('avg_processing_time', 0)
+            }
+        
+        # Find peak usage time
+        seasonal_patterns = self.patterns.get('seasonal_patterns', {})
+        hourly_patterns = seasonal_patterns.get('hourly', {})
+        if hourly_patterns:
+            peak_hour = max(hourly_patterns.items(), key=lambda x: x[1])
+            insights['peak_usage_time'] = {
+                'hour': peak_hour[0],
+                'query_count': peak_hour[1]
+            }
+        
+        # Success rate summary
+        success_rates = self.patterns.get('query_success_rates', {})
+        if success_rates:
+            avg_success_rate = sum(success_rates.values()) / len(success_rates)
+            best_intent = max(success_rates.items(), key=lambda x: x[1]) if success_rates else None
+            worst_intent = min(success_rates.items(), key=lambda x: x[1]) if success_rates else None
+            
+            insights['query_success_summary'] = {
+                'average_success_rate': avg_success_rate,
+                'best_performing_intent': best_intent,
+                'worst_performing_intent': worst_intent
+            }
+        
+        return insights
+    
+    def get_recommendations(self) -> List[str]:
+        """Generate actionable recommendations based on patterns."""
+        recommendations = []
+        insights = self.get_trending_insights()
+        
+        # Trending query recommendations
+        trending = insights.get('top_trending_queries', [])
+        if trending:
+            recommendations.append(f"📈 Consider adding quick answers for trending topic: '{trending[0].get('sample_query', 'N/A')}' (asked {trending[0].get('total_count', 0)} times recently)")
+        
+        # Success rate recommendations
+        success_summary = insights.get('query_success_summary', {})
+        worst_intent = success_summary.get('worst_performing_intent')
+        if worst_intent and worst_intent[1] < 70:  # Less than 70% success rate
+            recommendations.append(f"⚠️ Improve responses for '{worst_intent[0]}' queries (only {worst_intent[1]:.1f}% satisfaction rate)")
+        
+        # Usage pattern recommendations
+        peak_time = insights.get('peak_usage_time')
+        if peak_time:
+            recommendations.append(f"⏰ Peak usage at hour {peak_time['hour']}. Consider monitoring system performance during this time.")
+        
+        # Popular intent recommendations
+        popular_intent = insights.get('most_popular_intent')
+        if popular_intent and popular_intent['avg_processing_time'] > 3000:  # > 3 seconds
+            recommendations.append(f"🚀 Optimize '{popular_intent['intent']}' responses - they're popular but slow (avg {popular_intent['avg_processing_time']:.0f}ms)")
+        
+        return recommendations if recommendations else ["✅ No specific recommendations - system performing well!"]
+
+
+if __name__ == "__main__":
+    # Example usage
+    tracker = QueryPatternTracker()
+    patterns = tracker.analyze_query_patterns()
+    insights = tracker.get_trending_insights()
+    recommendations = tracker.get_recommendations()
+    
+    print("Query Pattern Analysis Results:")
+    print(f"Trending Queries: {len(patterns.get('trending_queries', []))}")
+    print(f"Popular Intents: {len(patterns.get('popular_intents', {}))}")
+    print(f"Recommendations: {len(recommendations)}")
