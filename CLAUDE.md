@@ -1,7 +1,9 @@
-# Credit Card Features Chatbot - Project Summary for Claude Code
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
-This is an Indian credit card comparison chatbot that helps users compare features between Axis Bank Atlas and ICICI Bank Emeralde Private Metal credit cards. The system uses a rule-based QA engine with GPT-4 for intelligent responses.
+This is an Indian credit card comparison chatbot that helps users compare features between Axis Bank Atlas and ICICI Bank Emeralde Private Metal credit cards. The system uses a rule-based QA engine enhanced with AI (Gemini preferred, OpenAI fallback) for intelligent responses.
 
 ## 🚨 DEVELOPMENT WORKFLOW - ALWAYS FOLLOW THIS!
 
@@ -20,48 +22,82 @@ When asked to implement any feature, always say: "Let me research the codebase a
 python -m pytest tests/ -v                # All tests must pass
 python -m black --check .                 # Code formatting
 python -m flake8 .                        # Linting
-python test_runner.py                     # Project-specific tests
+python test_runner.py                     # Project-specific tests (21 comprehensive test cases)
 ```
 
 **ZERO TOLERANCE POLICY**: Fix ALL issues before continuing. No exceptions.
 
-### Working Memory Management
-Maintain **TODO.md** for active development:
-```markdown
-## Current Task
-- [ ] What we're doing RIGHT NOW
+## Development Commands
 
-## Completed  
-- [x] What's actually done and tested
+### Running the Application
+```bash
+# Launch application (preferred method)
+./launch.sh
 
-## Next Steps
-- [ ] What comes next
-
-## Blockers
-- [ ] Issues requiring attention
+# Alternative direct launch
+streamlit run app.py --server.port=8501
 ```
 
-## Key Files & Architecture
+### Testing
+```bash
+# Run automated test suite (21 comprehensive test cases)
+python test_runner.py
 
-### Core Application Files
-- **`app.py`** - Main Flask web application with chatbot interface
-- **`utils/qa_engine.py`** - Core QA engine with intent detection and response generation
-- **`data/axis-atlas.json`** - Axis Bank Atlas card structured data
-- **`data/icici-epm.json`** - ICICI Bank Emeralde Private Metal card structured data
-- **`launch.sh`** - Application launcher script
-- **`requirements.txt`** - Python dependencies
+# View test dashboard
+# Open test_cases.html in browser
 
-### Testing & Quality Assurance
-- **`test_cases.html`** - Manual test interface with 18 comprehensive test cases
-- **`test_runner.py`** - Automated test runner with pass/fail reporting
-- **`test_report_*.txt`** - Historical test results (83% pass rate)
+# Run specific test validation
+python -c "from utils.qa_engine import process_query; print(process_query('your test query', []))"
+```
 
-## Technical Stack
-- **Backend**: Python 3.x, Flask framework
-- **AI Engine**: OpenAI GPT-4 via API
-- **Frontend**: HTML5, CSS3 (Bootstrap), Vanilla JavaScript
-- **Data Format**: Structured JSON for card features
-- **Testing**: Custom test framework with automated validation
+### Code Quality
+```bash
+# Format code
+python -m black .
+
+# Check linting
+python -m flake8 .
+
+# Combined quality check
+python -m black . && python -m flake8 . && python test_runner.py
+```
+
+## Architecture Overview
+
+### Core Components
+
+**`app.py`** (843 lines) - Main Streamlit web application
+- Mobile-first responsive design with extensive custom CSS
+- Real-time feedback system with thumbs up/down
+- Collapsible quick questions interface  
+- Admin dashboard accessible via `?admin=true` URL parameter
+- Session management and chat history
+
+**`utils/qa_engine.py`** (1,247 lines) - Core QA engine
+- Sophisticated intent detection using regex patterns
+- Currency preprocessing for Indian notation (lakh, crore, k)
+- Complex reward calculation engine with category-specific logic
+- Dual API support (Gemini preferred, OpenAI fallback)
+- Comprehensive exclusion and capping logic
+
+**Data Files:**
+- `data/axis-atlas.json` - Structured Axis Bank Atlas card data
+- `data/icici-epm.json` - Structured ICICI Emeralde Private Metal data
+- Normalized JSON structure with consistent field mappings
+
+### Technical Stack
+- **Backend**: Python 3.x with Streamlit framework
+- **AI Engine**: Primary support for Google Gemini, fallback to OpenAI GPT-4/3.5-turbo
+- **Frontend**: Streamlit with extensive custom CSS for mobile-responsive design
+- **Data Format**: Structured JSON files for card features and policies
+- **Testing**: Custom automated test framework with HTML dashboard
+
+### Key Data Flow
+
+1. **User Query** → Intent Detection → Currency Preprocessing
+2. **Context Building** → Card Data Extraction → Unified Rate Field Creation
+3. **AI Processing** → Response Generation → Financial Calculation Validation
+4. **Feedback Collection** → Analytics Storage → Improvement Tracking
 
 ## Code Quality Standards
 
@@ -91,219 +127,174 @@ Maintain **TODO.md** for active development:
 - **Logging** instead of print statements
 - **Environment variables** for configuration (never hardcode)
 
-## Core Functionality Flow
+## Financial Calculation Logic
 
-### 1. User Query Processing (`qa_engine.py`)
-```python
-process_query(user_query, conversation_history) → response
-```
-
-**Intent Detection Pipeline:**
-- Currency preprocessing (3L → 300000, 20k → 20000)
-- Pattern matching for reward calculations, redemptions, comparisons
-- Spend amount extraction with Indian currency notation support
-- Card name detection (axis/atlas vs icici/emeralde)
-
-**Key Intent Categories:**
+### Intent Categories
 - `reward_calculation` - "What points for ₹50k spend on dining?"
 - `redemption_query` - "What can I do with 5000 points?"
 - `feature_comparison` - "Compare lounge access between cards"
 - `general_query` - Basic card information requests
 
-### 2. Data Retrieval & Context Building
-- Extracts relevant card data based on detected intent
-- Creates unified `earning_rate` field from different JSON structures
-- Handles category-specific caps and exclusions
-- Builds comprehensive context for AI processing
+### Currency Preprocessing
+- "3L" → 300,000
+- "2 crore" → 20,000,000  
+- "20k" → 20,000
+- Handles Indian lakh/crore notation
 
-### 3. AI Response Generation
-- Uses GPT-4 with structured system prompts
-- Includes card data, user query, and conversation history
-- Handles complex calculations (reward rates, caps, comparisons)
-- Provides actionable recommendations
+### Reward Calculation Engine
+- Category-specific earning rates with caps
+- Tiered earning (e.g., Axis travel: 5x up to ₹2L monthly, then 2x)
+- Exclusion handling for restricted categories
+- Comparative analysis across cards
 
-## Critical JSON Data Structure
+## Data Structure Standards
 
-### Unified Field Mapping (Important for AI comprehension)
+### Unified JSON Field Mapping
 Both cards normalized to have consistent fields:
 - `rate_general` - Base earning rate for general spends
 - `value_per_point` - Redemption value per point/mile
 - `accrual_exclusions` - Array of excluded categories
 - `earning_rate` - Dynamically created unified rate field
 
-### Key Data Points
+### Key Card Data Points
 **Axis Atlas:**
 - 2 EDGE Miles per ₹100 general spend
-- 5x miles for travel (up to ₹2L spend cap, then 2x)
+- 5x miles for travel (up to ₹2L monthly cap, then 2x)
 - Education NOT excluded
 - ₹1 per EDGE Mile redemption value
 
 **ICICI Emeralde Private Metal:**
 - 6 points per ₹200 spend (effectively 3 points per ₹100)
 - Education capped at 1000 points per cycle
-- Multiple exclusions for government, rent, fuel, etc.
+- Multiple exclusions for government, rent, fuel
 - Up to ₹1 per point redemption value
 
-## Testing Strategy & Implementation Standards
+## Testing Strategy
 
-### Our code is complete when:
+### Test Coverage (21 Test Cases)
+Current metrics: 83% pass rate with comprehensive coverage:
+- Hotel/travel spending calculations
+- Utility payment restrictions
+- Reward rate comparisons
+- Insurance premium handling
+- Government spending exclusions
+- Education fee calculations
+- Category-specific caps and limits
+
+### Testing Philosophy
+- **Financial calculations** → Write tests first (accuracy is critical)
+- **API endpoints** → Write tests after implementation
+- **Edge cases** → Comprehensive coverage for Indian currency, card variations
+- **User experience** → Test mobile interface and feedback system
+
+### Code Completion Standards
 - ✅ All linters pass with zero issues
 - ✅ All tests pass (both automated and manual)
 - ✅ Feature works end-to-end
 - ✅ Old code is deleted
 - ✅ Proper documentation on all functions
 
-### Testing Philosophy
-- **Financial calculations** → Write tests first (accuracy is critical)
-- **Simple API endpoints** → Write tests after
-- **Hot paths** → Add performance tests
-- **Edge cases** → Comprehensive coverage for Indian currency, card variations
-
-### Manual Testing (`test_cases.html`)
-18 comprehensive test cases covering:
-- Basic card information queries
-- Reward calculations with various spend amounts
-- Category-specific earning rates and caps
-- Redemption value calculations
-- Complex comparison scenarios
-- Edge cases (excluded categories, spending caps)
-
-### Automated Testing (`test_runner.py`)
-- Runs all test cases programmatically
-- Validates expected vs actual responses
-- Generates detailed pass/fail reports
-- Current metrics: 18 tests, 83% pass rate
-
 ## Problem-Solving Framework
 
 ### When stuck or confused:
 1. **Stop** - Don't spiral into complex solutions
-2. **Step back** - Re-read the requirements and test cases
+2. **Step back** - Re-read the test cases and requirements
 3. **Simplify** - The simple solution is usually correct
-4. **Test** - Validate assumptions with quick tests
+4. **Test** - Validate assumptions with `test_runner.py`
 5. **Ask** - "I see two approaches: [A] vs [B]. Which do you prefer?"
 
-### Debugging Protocol:
-1. **Reproduce** the issue with specific test case
-2. **Isolate** the problem (intent detection vs data retrieval vs AI generation)
-3. **Verify** the fix with both automated and manual tests
-4. **Document** the solution in this file
+### Common Issues & Solutions
 
-## Recent Bug Fixes Implemented
+**Currency Parsing Issues**: Check `preprocess_currency_abbreviations()` method
+**Intent Detection Problems**: Review regex patterns in `qa_engine.py`
+**Data Access Issues**: Normalize JSON field names rather than updating prompts
+**Test Failures**: Run `python test_runner.py` for detailed failure analysis
 
-### 1. Currency Preprocessing Enhancement
-**Problem**: "3L" parsed as "3" instead of "300000"
-**Solution**: Added `preprocess_currency_abbreviations()` method
+## AI Integration
 
-### 2. Intent Detection Improvements  
-**Problem**: Reward calculation queries not detected properly
-**Solution**: Enhanced pattern matching for spend-based queries
+### Dual API Support
+- **Primary**: Google Gemini (gemini-1.5-pro)
+- **Fallback**: OpenAI GPT-4/3.5-turbo
+- Environment variables: `GEMINI_API_KEY`, `OPENAI_API_KEY`
 
-### 3. JSON Structure Normalization
-**Problem**: Axis data in `others_rate` while ICICI in `rate_general`
-**Solution**: Created unified `earning_rate` field extraction
-
-### 4. Education Spending Logic
-**Problem**: AI incorrectly stating "no general rate" for Axis Atlas
-**Solution**: Updated system prompts to check multiple rate fields
-
-## Key Learnings & Best Practices
-
-### 1. Data Structure Consistency
-**Critical Rule**: When AI can't find card data, normalize JSON field names between cards rather than updating AI prompts. This solves 90% of data access issues.
-
-### 2. Intent Detection Patterns
-- Use broad pattern matching for user query variations
-- Handle Indian currency notation (L for lakh, Cr for crore)
-- Distinguish between earning vs redemption queries
-- Account for category-specific language variations
-
-### 3. Reward Calculation Logic
-- Always check for category caps and exclusions
-- Handle tiered earning rates (e.g., Axis travel: 5x up to cap, then 2x)
-- Include comparative analysis when multiple cards mentioned
-- Provide concrete examples with spend amounts
-
-### 4. System Prompt Engineering
+### System Prompt Engineering
 - Include explicit instructions for finding rates in different JSON structures
 - Provide concrete examples of rate extraction
 - Never allow "no rate provided" responses when data exists
 - Include conversation context for follow-up questions
 
-## Performance & Security Standards
+## User Experience Features
 
-### **Measure First**:
-- No premature optimization
-- Profile API response times before claiming performance issues
-- Use proper logging to identify actual bottlenecks
+### Mobile-First Design
+- Responsive CSS with extensive customization
+- Touch-friendly interface elements
+- Collapsible quick questions (auto-hide after first interaction)
+- Dark mode compatibility
 
-### **Security Always**:
-- Validate all user inputs (sanitize queries, check spend amounts)
-- Use environment variables for API keys
-- Implement rate limiting for API calls
-- Never log sensitive information (API keys, user data)
+### Real-Time Feedback System
+- Thumbs up/down buttons on each response
+- Improvement suggestions for negative feedback
+- Session tracking with persistent JSON storage
+- Admin analytics dashboard with CSV export
 
-### **Error Handling**:
-- Graceful degradation when GPT-4 API is unavailable
-- Meaningful error messages for users
-- Comprehensive logging for debugging
+## Key Learnings
 
-## Communication Protocols
+1. **Data Structure Consistency**: When AI can't find card data, normalize JSON field names between cards rather than updating AI prompts
+2. **Intent Detection**: Use broad pattern matching for user query variations and handle Indian currency notation
+3. **Reward Calculation**: Always check for category caps and exclusions, handle tiered earning rates
+4. **System Prompts**: Include explicit instructions and concrete examples for rate extraction
 
-### Progress Updates:
-```
-✅ Implemented currency preprocessing (all tests passing)
-✅ Added intent detection for reward calculations
-❌ Found issue with education spending logic - investigating
-```
+## Performance & Security
 
-### Suggesting Improvements:
-"The current approach works, but I notice [observation].
-Would you like me to [specific improvement]?"
+### Performance Standards
+- Response time target: < 3 seconds
+- API rate limiting considerations
+- Efficient JSON data structure loading
+- Streamlit session state management
+
+### Security Measures
+- Environment variable management for API keys
+- Input validation and sanitization
+- No sensitive information logging
+- Secure session handling
 
 ## Scaling Considerations
 
-### Current Architecture Benefits
-- Rule-based engine ensures financial accuracy
-- Structured JSON allows easy addition of new cards
-- Comprehensive test coverage validates changes
-- Clear separation of data and logic
+### Adding New Cards
+1. Create similar JSON structure in `data/` directory
+2. Update data mapping in `qa_engine.py`
+3. Add test cases for new card scenarios
+4. Update unified field extraction logic
 
-### Future Enhancement Options
-1. **Adding New Cards**: Create similar JSON structure, update data mapping
-2. **Advanced AI Features**: Consider fine-tuning or RAG for complex queries
-3. **Web Search Fallback**: Implement for low-confidence responses
-4. **Multi-language Support**: Extend for Hindi/regional languages
+### Enhancing AI Features
+- Consider RAG implementation for complex queries
+- Fine-tuning opportunities for domain-specific responses
+- Multi-language support for Hindi/regional languages
+- Web search fallback for low-confidence responses
 
-## Quick Start Commands
+## Quick Reference
+
 ```bash
-# Install dependencies
+# Environment Setup
 pip install -r requirements.txt
 
-# Launch application
-./launch.sh
+# Development Workflow
+./launch.sh                    # Launch app
+python test_runner.py         # Run tests
+python -m black .             # Format code
+python -m flake8 .            # Lint code
 
-# Run automated tests
-python test_runner.py
-
-# Run full quality check
-python -m black . && python -m flake8 . && python test_runner.py
-
-# Access manual test interface
-# Navigate to /test in running application
+# Access Points
+http://localhost:8501         # Main app
+http://localhost:8501?admin=true  # Admin dashboard
 ```
-
-## Performance Metrics
-- Response time: < 3 seconds average
-- Test pass rate: 83% (15/18 tests)
-- Supported cards: 2 (Axis Atlas, ICICI EPM)
-- Query types handled: 4 major intent categories
-- Data coverage: Comprehensive card features, fees, rewards, benefits
 
 ## Final Notes
 
-This system demonstrates effective rule-based AI for financial domain applications where accuracy is paramount over flexibility. 
+This system demonstrates effective rule-based AI for financial domain applications where accuracy is paramount. The codebase prioritizes:
+- **Accuracy over flexibility** in financial calculations
+- **Mobile-first user experience** with real-time feedback
+- **Comprehensive testing** with automated validation
+- **Clean architecture** with clear separation of concerns
 
-**Remember**: Simple code is easier to maintain and debug. Write code for humans first, computers second. Add complexity only when justified by requirements.
-
-When in doubt, prioritize accuracy over cleverness - in financial applications, being correct is more important than being elegant. 
+Remember: Simple code is easier to maintain and debug. In financial applications, being correct is more important than being clever. 
