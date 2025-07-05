@@ -768,43 +768,58 @@ def main():
     elif query_params.get("admin") == "feedback":
         st.title("📊 Feedback Dashboard")
         
-        # Load and display feedback
-        feedback_file = "feedback_log.json"
-        if os.path.exists(feedback_file):
-            try:
-                with open(feedback_file, 'r') as f:
-                    feedback_data = json.load(f)
+        # Load feedback data from persistent storage (works with GitHub Gist)
+        try:
+            from persistent_storage import storage_manager
+            feedback_data = storage_manager.load_feedback_data()
+            
+            if feedback_data:
+                st.metric("Total Feedback", len(feedback_data))
+                st.success(f"✅ Data loaded from: {storage_manager.storage_type}")
                 
-                if feedback_data:
-                    st.metric("Total Feedback", len(feedback_data))
-                    
-                    # Show recent feedback
-                    st.subheader("Recent Feedback")
-                    for i, entry in enumerate(reversed(feedback_data[-10:])):  # Last 10
-                        with st.expander(f"{entry['feedback'].upper()}: {entry['query'][:80]}..."):
-                            st.write("**Query:**", entry['query'])
-                            st.write("**Response:**", entry['response'][:300] + "..." if len(entry['response']) > 300 else entry['response'])
-                            st.write("**Feedback:**", entry['feedback'])
-                            if entry.get('improvement_suggestion'):
-                                st.write("**Suggestion:**", entry['improvement_suggestion'])
-                            st.write("**Time:**", entry['timestamp'])
-                    
-                    # Download option
-                    import pandas as pd
-                    df = pd.DataFrame(feedback_data)
-                    csv = df.to_csv(index=False)
-                    st.download_button(
-                        "Download All Feedback as CSV",
-                        csv,
-                        "feedback_data.csv",
-                        "text/csv"
-                    )
-                else:
-                    st.info("No feedback data yet.")
-            except Exception as e:
-                st.error(f"Error loading feedback: {e}")
-        else:
-            st.info("No feedback file found.")
+                # Show recent feedback
+                st.subheader("Recent Feedback")
+                for i, entry in enumerate(reversed(feedback_data[-10:])):  # Last 10
+                    with st.expander(f"{entry['feedback'].upper()}: {entry['query'][:80]}..."):
+                        st.write("**Query:**", entry['query'])
+                        st.write("**Response:**", entry['response'][:300] + "..." if len(entry['response']) > 300 else entry['response'])
+                        st.write("**Feedback:**", entry['feedback'])
+                        if entry.get('improvement_suggestion'):
+                            st.write("**Suggestion:**", entry['improvement_suggestion'])
+                        st.write("**Time:**", entry['timestamp'])
+                        
+                        # Show analytics if available
+                        if 'analytics' in entry:
+                            st.json(entry['analytics'])
+                
+                # Download option
+                import pandas as pd
+                df = pd.DataFrame(feedback_data)
+                csv = df.to_csv(index=False)
+                st.download_button(
+                    "Download All Feedback as CSV",
+                    csv,
+                    "feedback_data.csv",
+                    "text/csv"
+                )
+            else:
+                st.info("No feedback data yet. Submit some feedback to see it here!")
+                st.info(f"🔍 Storage type: {storage_manager.storage_type}")
+        except Exception as e:
+            st.error(f"Error loading feedback: {e}")
+            
+            # Fallback to local file
+            feedback_file = "feedback_log.json"
+            if os.path.exists(feedback_file):
+                st.info("📁 Falling back to local file...")
+                try:
+                    with open(feedback_file, 'r') as f:
+                        feedback_data = json.load(f)
+                    st.success(f"✅ Loaded {len(feedback_data)} entries from local file")
+                except Exception as local_error:
+                    st.error(f"Local file error: {local_error}")
+            else:
+                st.warning("No local file found either.")
         
         st.markdown("---")
         st.markdown("**Access URL:** Add `?admin=feedback` to your app URL to view this page")
