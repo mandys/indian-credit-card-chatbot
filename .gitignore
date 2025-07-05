@@ -13,6 +13,8 @@ __pycache__/
 # Ignore auto-generated files
 test_report_*.txt
 feedback_log.json
+query_analytics.json
+query_patterns.json
 CLAUDE.md
 
 # Ignore temporary files

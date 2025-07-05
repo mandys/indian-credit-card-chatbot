@@ -508,39 +508,150 @@ class QueryEnhancer:
         return query
 
 def log_feedback(query: str, response: str, feedback_type: str, improvement_suggestion: str = ""):
-    """Log user feedback for analysis and improvement."""
+    """Log user feedback with comprehensive analytics for self-learning."""
     import datetime
     import json
     import os
+    import re
+    import time
     
+    # Record timing for analytics
+    start_time = time.time()
+    
+    # Analyze the query for comprehensive analytics
+    try:
+        # Initialize a temporary bot instance for analytics (reuse session bot if available)
+        if not hasattr(st.session_state, 'analytics_bot'):
+            from utils.qa_engine import RichDataCreditCardBot
+            st.session_state.analytics_bot = RichDataCreditCardBot([
+                "data/axis-atlas.json", 
+                "data/icici-epm.json"
+            ])
+        
+        bot = st.session_state.analytics_bot
+        
+        # Preprocess query like the main engine does
+        processed_query = bot.preprocess_currency_abbreviations(query.lower())
+        
+        # Detect intent and extract analytics
+        intent_detected = bot.detect_intent(processed_query)
+        cards_mentioned = bot.extract_card_names(query.lower())
+        
+        # Extract spending amount if present
+        spend_amount = None
+        amount_patterns = [
+            r'₹?(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:lakh|l\b)',
+            r'₹?(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:crore|cr\b)',
+            r'₹?(\d+(?:,\d+)*(?:\.\d+)?)\s*(?:thousand|k\b)',
+            r'₹(\d+(?:,\d+)*(?:\.\d+)?)',
+            r'(\d+(?:,\d+)*(?:\.\d+)?)\s*rupees?'
+        ]
+        
+        for pattern in amount_patterns:
+            match = re.search(pattern, processed_query, re.IGNORECASE)
+            if match:
+                spend_amount = match.group(1).replace(',', '')
+                break
+        
+        # Detect spending categories mentioned
+        categories_mentioned = []
+        category_keywords = {
+            'travel': ['travel', 'flight', 'airline', 'hotel', 'booking', 'vacation'],
+            'dining': ['dining', 'restaurant', 'food', 'zomato', 'swiggy'],
+            'fuel': ['fuel', 'petrol', 'diesel', 'gas', 'station'],
+            'grocery': ['grocery', 'supermarket', 'vegetables', 'provisions'],
+            'utility': ['utility', 'electricity', 'water', 'mobile', 'internet'],
+            'education': ['education', 'school', 'college', 'university', 'fees'],
+            'insurance': ['insurance', 'premium', 'policy'],
+            'government': ['government', 'tax', 'municipal', 'challan']
+        }
+        
+        for category, keywords in category_keywords.items():
+            if any(keyword in processed_query for keyword in keywords):
+                categories_mentioned.append(category)
+        
+        # Query complexity analysis
+        query_complexity = {
+            'word_count': len(query.split()),
+            'has_comparison': any(word in query.lower() for word in ['better', 'vs', 'compare', 'which']),
+            'has_calculation': any(word in query.lower() for word in ['spend', 'points', 'miles', 'rewards']),
+            'has_conditional': any(word in query.lower() for word in ['if', 'when', 'what if'])
+        }
+        
+        # Enhanced analytics
+        query_analytics = {
+            'intent_detected': intent_detected or 'unknown',
+            'intent_confidence': 1.0 if intent_detected else 0.0,  # Simple confidence for now
+            'cards_mentioned': cards_mentioned,
+            'spend_amount': spend_amount,
+            'categories_mentioned': categories_mentioned,
+            'query_complexity': query_complexity,
+            'query_length': len(query),
+            'processing_time_ms': round((time.time() - start_time) * 1000, 2)
+        }
+        
+    except Exception as e:
+        # Fallback analytics if analysis fails
+        query_analytics = {
+            'intent_detected': 'analysis_failed',
+            'intent_confidence': 0.0,
+            'cards_mentioned': [],
+            'spend_amount': None,
+            'categories_mentioned': [],
+            'query_complexity': {'word_count': len(query.split())},
+            'query_length': len(query),
+            'processing_time_ms': 0,
+            'analysis_error': str(e)
+        }
+    
+    # Enhanced feedback entry with comprehensive analytics
     feedback_entry = {
         "timestamp": datetime.datetime.now().isoformat(),
         "query": query,
-        "response": response[:500] + "..." if len(response) > 500 else response,  # Truncate long responses
-        "feedback": feedback_type,  # 'positive' or 'negative'
+        "response": response[:500] + "..." if len(response) > 500 else response,
+        "feedback": feedback_type,
         "improvement_suggestion": improvement_suggestion,
-        "session_id": id(st.session_state)  # Simple session tracking
+        "session_id": id(st.session_state),
+        # NEW: Comprehensive query analytics
+        "analytics": query_analytics,
+        "user_journey": {
+            "messages_in_session": len(st.session_state.get('messages', [])),
+            "feedback_given_count": len(st.session_state.get('feedback_log', [])),
+            "session_duration_minutes": round((time.time() - st.session_state.get('session_start', time.time())) / 60, 2)
+        }
     }
     
     # Append to session state
     st.session_state.feedback_log.append(feedback_entry)
     
-    # Also log to file for persistence
-    feedback_file = "feedback_log.json"
+    # Also log to persistent storage (works across Streamlit deployments)
     try:
-        if os.path.exists(feedback_file):
-            with open(feedback_file, 'r') as f:
-                existing_feedback = json.load(f)
-        else:
-            existing_feedback = []
+        from persistent_storage import storage_manager
         
+        # Load existing feedback
+        existing_feedback = storage_manager.load_feedback_data()
         existing_feedback.append(feedback_entry)
         
-        with open(feedback_file, 'w') as f:
-            json.dump(existing_feedback, f, indent=2)
+        # Save back to persistent storage
+        storage_manager.save_feedback_data(existing_feedback)
+        
     except Exception as e:
-        # Fail silently to not disrupt user experience
-        pass
+        # Fallback to local file
+        feedback_file = "feedback_log.json"
+        try:
+            if os.path.exists(feedback_file):
+                with open(feedback_file, 'r') as f:
+                    existing_feedback = json.load(f)
+            else:
+                existing_feedback = []
+            
+            existing_feedback.append(feedback_entry)
+            
+            with open(feedback_file, 'w') as f:
+                json.dump(existing_feedback, f, indent=2)
+        except Exception:
+            # Fail silently to not disrupt user experience
+            pass
 
 def main():
     """Enhanced main function with better UX."""
@@ -560,9 +671,97 @@ def main():
     bot = load_bot()
     enhancer = QueryEnhancer()
     
-    # Admin feedback viewer (accessible via URL parameter)
+    # Admin analytics viewer (accessible via URL parameter)
     query_params = st.query_params
-    if query_params.get("admin") == "feedback":
+    if query_params.get("admin") == "analytics":
+        # Redirect to enhanced analytics dashboard
+        st.title("📊 Enhanced Analytics Dashboard")
+        st.markdown("### 🚀 **New Enhanced Dashboard Available!**")
+        st.markdown("""
+        We've created a comprehensive analytics dashboard with advanced insights:
+        
+        **🎯 Key Features:**
+        - Real-time feedback analysis
+        - Query performance metrics  
+        - Intent detection insights
+        - User satisfaction tracking
+        - Export functionality
+        
+        **🔗 Access Methods:**
+        1. **Run directly:** `streamlit run analytics_dashboard.py`
+        2. **Command line:** `python analytics_dashboard.py`
+        """)
+        
+        st.markdown("---")
+        st.subheader("📋 Quick Stats")
+        
+        # Show quick stats from both data sources
+        feedback_count = 0
+        query_count = 0
+        
+        if os.path.exists("feedback_log.json"):
+            try:
+                with open("feedback_log.json", 'r') as f:
+                    feedback_data = json.load(f)
+                    feedback_count = len(feedback_data)
+            except:
+                pass
+        
+        if os.path.exists("query_analytics.json"):
+            try:
+                with open("query_analytics.json", 'r') as f:
+                    query_data = json.load(f)
+                    query_count = len(query_data)
+            except:
+                pass
+        
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            st.metric("Total Feedback", feedback_count)
+        with col2:
+            st.metric("Queries Analyzed", query_count)
+        with col3:
+            st.metric("Analytics Active", "✅" if feedback_count > 0 or query_count > 0 else "❌")
+        
+        # Show trending insights if data is available
+        if feedback_count > 0 or query_count > 0:
+            st.markdown("---")
+            st.subheader("🔥 Live Intelligence Insights")
+            
+            try:
+                from query_pattern_tracker import QueryPatternTracker
+                tracker = QueryPatternTracker()
+                insights = tracker.get_trending_insights()
+                recommendations = tracker.get_recommendations()
+                
+                # Show trending queries
+                trending = insights.get('top_trending_queries', [])
+                if trending:
+                    st.markdown("**📈 Trending Queries:**")
+                    for i, trend in enumerate(trending[:3], 1):
+                        st.write(f"{i}. *{trend.get('sample_query', 'N/A')}* (asked {trend.get('total_count', 0)} times)")
+                
+                # Show key insights
+                popular_intent = insights.get('most_popular_intent')
+                if popular_intent:
+                    st.markdown(f"**🎯 Most Popular Intent:** {popular_intent['intent']} ({popular_intent['count']} queries)")
+                
+                peak_time = insights.get('peak_usage_time')
+                if peak_time:
+                    st.markdown(f"**⏰ Peak Usage Hour:** {peak_time['hour']}:00 ({peak_time['query_count']} queries)")
+                
+                # Show recommendations
+                if recommendations:
+                    st.markdown("**💡 AI Recommendations:**")
+                    for rec in recommendations[:3]:
+                        st.info(rec)
+                        
+            except Exception as e:
+                st.warning("Pattern analysis temporarily unavailable")
+        
+        return  # Stop here, don't show the main chatbot
+    
+    elif query_params.get("admin") == "feedback":
         st.title("📊 Feedback Dashboard")
         
         # Load and display feedback
@@ -618,6 +817,11 @@ def main():
     
     if "feedback_log" not in st.session_state:
         st.session_state.feedback_log = []
+    
+    # Track session analytics
+    if "session_start" not in st.session_state:
+        import time
+        st.session_state.session_start = time.time()
 
     # Quick questions section - collapsible after first interaction
     user_messages = [msg for msg in st.session_state.messages if msg["role"] == "user"]

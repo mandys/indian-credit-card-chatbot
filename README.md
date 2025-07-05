@@ -99,14 +99,25 @@ The system includes comprehensive test cases covering:
 - ✅ Hotel spending calculations with travel category rates
 - ✅ Feedback system functionality and data logging
 
-## 📊 Analytics & Monitoring
+## 📊 Advanced Analytics & Monitoring
 
-### Built-in Feedback Dashboard
-Access the feedback analytics by adding `?admin=feedback` to your app URL:
-- **Feedback Metrics**: Total feedback count and satisfaction rate
-- **Recent Feedback**: View latest user feedback with improvement suggestions
-- **Data Export**: Download feedback data as CSV for analysis
-- **Query Patterns**: Analyze most common user queries
+### 🚀 Enhanced Analytics Dashboard (NEW!)
+Run the comprehensive analytics dashboard:
+```bash
+streamlit run analytics_dashboard.py
+```
+**Features:**
+- **Real-time Performance Metrics**: Response times, API usage, error tracking
+- **Query Intelligence**: Intent detection accuracy, query patterns, complexity analysis
+- **User Satisfaction Analysis**: Feedback trends, satisfaction by intent, card preferences
+- **Interactive Visualizations**: Charts, graphs, and trend analysis
+- **Advanced Export**: CSV downloads with rich analytics data
+
+### Built-in Quick Dashboards
+Access via URL parameters:
+- **Enhanced Analytics**: `?admin=analytics` - Quick stats and dashboard links
+- **Basic Feedback**: `?admin=feedback` - Simple feedback viewer
+- **Export Options**: Download comprehensive analytics data as CSV
 
 ### Feedback Features
 - **Thumbs Up/Down**: Quick feedback on each response

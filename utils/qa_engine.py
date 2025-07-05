@@ -1210,21 +1210,114 @@ CONTEXT:
         
         return response
 
-    def get_answer(self, user_query: str) -> str:
-        """Main method to process a query and return an answer."""
-        if self.detect_greeting(user_query):
-            return self.get_greeting()
+    def get_answer(self, user_query: str, collect_analytics: bool = True) -> str:
+        """Main method to process a query and return an answer with optional analytics collection."""
+        import time
         
-        if self.detect_portfolio_query(user_query):
-            return self.get_portfolio_info()
+        # Start timing for analytics
+        start_time = time.time()
+        
+        # Initialize analytics data
+        analytics = {
+            'query_start_time': start_time,
+            'intent_detected': None,
+            'cards_mentioned': [],
+            'is_greeting': False,
+            'is_portfolio_query': False,
+            'data_retrieval_time': 0,
+            'response_generation_time': 0,
+            'total_processing_time': 0,
+            'api_used': self.api_type,
+            'model_used': self.model
+        } if collect_analytics else None
+        
+        try:
+            # Check for greeting
+            if self.detect_greeting(user_query):
+                if analytics:
+                    analytics['is_greeting'] = True
+                    analytics['total_processing_time'] = round((time.time() - start_time) * 1000, 2)
+                    self._store_query_analytics(user_query, analytics)
+                return self.get_greeting()
+            
+            # Check for portfolio query
+            if self.detect_portfolio_query(user_query):
+                if analytics:
+                    analytics['is_portfolio_query'] = True
+                    analytics['total_processing_time'] = round((time.time() - start_time) * 1000, 2)
+                    self._store_query_analytics(user_query, analytics)
+                return self.get_portfolio_info()
 
-        intent = self.detect_intent(user_query)
-        card_names = self.extract_card_names(user_query)
+            # Main query processing with analytics
+            data_start = time.time()
+            
+            intent = self.detect_intent(user_query)
+            card_names = self.extract_card_names(user_query)
+            relevant_data = self.get_relevant_data(intent, card_names)
+            
+            data_time = time.time() - data_start
+            
+            # Response generation
+            response_start = time.time()
+            answer = self.generate_answer(user_query, relevant_data, intent)
+            response_time = time.time() - response_start
+            
+            # Collect analytics
+            if analytics:
+                analytics.update({
+                    'intent_detected': intent,
+                    'cards_mentioned': card_names,
+                    'data_retrieval_time': round(data_time * 1000, 2),
+                    'response_generation_time': round(response_time * 1000, 2),
+                    'total_processing_time': round((time.time() - start_time) * 1000, 2)
+                })
+                self._store_query_analytics(user_query, analytics)
+            
+            return answer
+            
+        except Exception as e:
+            # Log error analytics
+            if analytics:
+                analytics.update({
+                    'error': str(e),
+                    'total_processing_time': round((time.time() - start_time) * 1000, 2)
+                })
+                self._store_query_analytics(user_query, analytics)
+            raise e
+    
+    def _store_query_analytics(self, query: str, analytics: dict):
+        """Store query analytics for learning and optimization."""
+        import json
+        import os
+        from datetime import datetime
         
-        relevant_data = self.get_relevant_data(intent, card_names)
-        answer = self.generate_answer(user_query, relevant_data, intent)
+        # Create analytics entry
+        analytics_entry = {
+            'timestamp': datetime.now().isoformat(),
+            'query': query,
+            'analytics': analytics
+        }
         
-        return answer
+        # Store in query analytics file
+        analytics_file = "query_analytics.json"
+        try:
+            if os.path.exists(analytics_file):
+                with open(analytics_file, 'r') as f:
+                    existing_analytics = json.load(f)
+            else:
+                existing_analytics = []
+            
+            existing_analytics.append(analytics_entry)
+            
+            # Keep only last 1000 entries to prevent file bloat
+            if len(existing_analytics) > 1000:
+                existing_analytics = existing_analytics[-1000:]
+            
+            with open(analytics_file, 'w') as f:
+                json.dump(existing_analytics, f, indent=2)
+        except Exception:
+            # Fail silently to not disrupt user experience
+            pass
 
 if __name__ == '__main__':
     bot = RichDataCreditCardBot()
