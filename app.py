@@ -711,13 +711,20 @@ def main():
             except:
                 pass
         
-        if os.path.exists("query_analytics.json"):
-            try:
-                with open("query_analytics.json", 'r') as f:
-                    query_data = json.load(f)
-                    query_count = len(query_data)
-            except:
-                pass
+        # Load query analytics from persistent storage
+        try:
+            from persistent_storage import storage_manager
+            query_data = storage_manager.load_analytics_data()
+            query_count = len(query_data)
+        except:
+            # Fallback to local file
+            if os.path.exists("query_analytics.json"):
+                try:
+                    with open("query_analytics.json", 'r') as f:
+                        query_data = json.load(f)
+                        query_count = len(query_data)
+                except:
+                    pass
         
         col1, col2, col3 = st.columns(3)
         with col1:

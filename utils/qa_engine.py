@@ -1298,23 +1298,39 @@ CONTEXT:
             'analytics': analytics
         }
         
-        # Store in query analytics file
-        analytics_file = "query_analytics.json"
+        # Try to use persistent storage (GitHub Gist) first
         try:
-            if os.path.exists(analytics_file):
-                with open(analytics_file, 'r') as f:
-                    existing_analytics = json.load(f)
-            else:
-                existing_analytics = []
+            from persistent_storage import storage_manager
             
+            # Load existing analytics from persistent storage
+            existing_analytics = storage_manager.load_analytics_data()
             existing_analytics.append(analytics_entry)
             
-            # Keep only last 1000 entries to prevent file bloat
+            # Keep only last 1000 entries to prevent bloat
             if len(existing_analytics) > 1000:
                 existing_analytics = existing_analytics[-1000:]
             
-            with open(analytics_file, 'w') as f:
-                json.dump(existing_analytics, f, indent=2)
+            # Save back to persistent storage
+            storage_manager.save_analytics_data(existing_analytics)
+            
+        except Exception:
+            # Fallback to local file storage
+            analytics_file = "query_analytics.json"
+            try:
+                if os.path.exists(analytics_file):
+                    with open(analytics_file, 'r') as f:
+                        existing_analytics = json.load(f)
+                else:
+                    existing_analytics = []
+                
+                existing_analytics.append(analytics_entry)
+                
+                # Keep only last 1000 entries to prevent file bloat
+                if len(existing_analytics) > 1000:
+                    existing_analytics = existing_analytics[-1000:]
+                
+                with open(analytics_file, 'w') as f:
+                    json.dump(existing_analytics, f, indent=2)
         except Exception:
             # Fail silently to not disrupt user experience
             pass
