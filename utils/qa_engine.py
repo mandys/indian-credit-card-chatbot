@@ -1015,23 +1015,32 @@ CRITICAL RULES FOR REWARD CALCULATIONS:
 3. For Axis Atlas yearly spends, include BOTH base earning AND milestone bonuses
 4. Calculate base rewards first, then add applicable milestone bonuses
 5. Show detailed breakdown: Base rewards + Milestone bonuses = Total rewards
+6. NEVER mix voucher values with reward points - they are separate benefits
 
 MILESTONE CALCULATION LOGIC:
-6. Check milestones array for spend thresholds (e.g., "₹3L", "₹7.5L", "₹15L")
-7. For each milestone the user's spend meets or exceeds, add those bonus miles/points
-8. Example: ₹7.5L spend = Base miles + ₹3L milestone + ₹7.5L milestone
+7. Check milestones array for spend thresholds (e.g., "₹3L", "₹7.5L", "₹15L")
+8. For each milestone the user's spend meets or exceeds, add those bonus miles/points
+9. Example: ₹7.5L spend = Base miles + ₹3L milestone + ₹7.5L milestone
+
+VOUCHER VS POINTS DISTINCTION:
+10. For ICICI EPM: EaseMyTrip vouchers are SEPARATE from reward points
+11. NEVER convert voucher values (₹3,000) to "points" - they remain vouchers
+12. Show vouchers as monetary value (₹X,XXX) not as points
+13. Do NOT add voucher values to point totals - they are different benefit types
 
 RESPONSE FORMAT FOR YEARLY SPENDING:
-9. **Base Earning:** [Amount] miles/points (rate × spend)
-10. **Milestone Bonuses:**
-    - ₹3L milestone: [X] bonus miles/points
-    - ₹7.5L milestone: [Y] bonus miles/points
-11. **Total Rewards:** [Base + Milestones] = [Total] miles/points
+14. **Base Earning:** [Amount] miles/points (rate × spend)
+15. **Milestone Benefits:**
+    - Axis Atlas: Bonus miles (e.g., ₹3L: 2,500 miles, ₹7.5L: 2,500 miles)
+    - ICICI EPM: Vouchers (e.g., ₹4L: ₹3,000 voucher, ₹8L: ₹3,000 voucher)
+16. **Total Points/Miles:** [Base + Milestone bonus points/miles only]
+17. **Additional Benefits:** [Vouchers listed separately with their monetary value]
 
-EXAMPLE FOR ₹7.5L AXIS ATLAS SPEND:
-• Base earning: 2% × ₹750,000 = 15,000 miles
-• Milestones: ₹3L (2,500 miles) + ₹7.5L (2,500 miles) = 5,000 miles
-• **Total: 20,000 miles**
+EXAMPLE FOR ₹8L ICICI EPM SPEND:
+• Base earning: ₹800,000 ÷ 200 × 6 = 24,000 points
+• Milestone benefits: ₹4L (₹3,000 EaseMyTrip voucher) + ₹8L (₹3,000 EaseMyTrip voucher)
+• **Total Points: 24,000 points**
+• **Additional Benefits: ₹6,000 in EaseMyTrip vouchers**
 
 Always check card data for exact milestone structure and include ALL applicable bonuses.
 """
