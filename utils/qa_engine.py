@@ -218,7 +218,11 @@ class RichDataCreditCardBot:
             re.search(r'spend.*\d+.*points', query_lower) or
             re.search(r'spend.*\d+.*miles', query_lower) or
             re.search(r'\d+.*spend.*points', query_lower) or
-            re.search(r'\d+.*spend.*miles', query_lower)):
+            re.search(r'\d+.*spend.*miles', query_lower) or
+            re.search(r'spend.*\d+.*what.*earn', query_lower) or
+            re.search(r'spend.*\d+.*earn', query_lower) or
+            re.search(r'\d+.*spend.*earn', query_lower) or
+            re.search(r'if.*spend.*\d+.*earn', query_lower)):
             return 'reward_calculation'
         
         # Check for tier-specific queries first (most specific)
