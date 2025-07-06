@@ -536,6 +536,23 @@ class RichDataCreditCardBot:
                     }
             return context
         
+        # Handle welcome_benefits queries
+        if intent == 'welcome_benefits':
+            context = {}
+            # If no specific cards mentioned, get all available cards
+            if not card_names:
+                card_names = list(self.cards_data.keys())
+            
+            for name in card_names:
+                if name in self.cards_data:
+                    card_info = self.cards_data[name]
+                    context[name] = {
+                        'welcome_benefits': card_info.get('welcome_benefits', {}),
+                        'tier_structure': card_info.get('tier_structure', {}),
+                        'name': name
+                    }
+            return context
+        
         # Handle general queries without specific cards - show all available cards' data
         if intent and not card_names:
             context = {}
@@ -1220,6 +1237,39 @@ CRITICAL RULES:
 6. If no transfer partner data exists, clearly state this limitation
 
 Be helpful but strictly factual based only on the provided data.
+"""
+        elif intent == 'welcome_benefits':
+            system_prompt = """
+You are a credit card expert answering questions about joining, welcome, and renewal benefits.
+
+CRITICAL RULES FOR WELCOME/RENEWAL BENEFITS:
+1. Answer ONLY based on the provided JSON data
+2. For "welcome benefits" or "joining benefits" - look at the "welcome_benefits" section
+3. For "renewal benefits" - check BOTH "welcome_benefits" AND "tier_structure" for "annual_bonus" 
+4. ALWAYS distinguish between one-time joining benefits vs recurring annual/renewal benefits
+5. Include tier-based information if available (Gold tier, Platinum tier bonuses)
+
+RESPONSE FORMAT:
+6. **One-time Welcome/Joining Benefits:** List joining rewards (e.g., EDGE Miles with conditions)
+7. **Annual/Renewal Benefits:** List recurring yearly benefits by tier if applicable
+8. **Conditions:** Mention transaction requirements, time limits, policies
+9. **Tier Benefits:** Explain tier-based annual bonuses if relevant
+
+RENEWAL BENEFITS LOGIC:
+10. Check "tier_structure" -> "tiers" -> each tier -> "annual_bonus" for renewal rewards
+11. Mention spend thresholds required to achieve different tiers
+12. For Axis Atlas: Silver (0 bonus), Gold (₹7.5L spend, 2500 bonus), Platinum (₹15L spend, 5000 bonus)
+
+EXAMPLE FORMAT:
+**Welcome/Joining Benefits:**
+- 2500 EDGE Miles (1 transaction within 37 days) - current offer
+
+**Annual/Renewal Benefits by Tier:**
+- Silver Tier: No annual bonus
+- Gold Tier: 2500 bonus miles (requires ₹7.5L annual spend)  
+- Platinum Tier: 5000 bonus miles (requires ₹15L annual spend)
+
+Be comprehensive and include both joining and renewal information when asked about either.
 """
         else:
             system_prompt = """
