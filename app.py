@@ -1,8 +1,9 @@
 import streamlit as st
-from utils.qa_engine import RichDataCreditCardBot
 import re
 import os
 import json
+import time
+import datetime
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -489,11 +490,18 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize the bot
+# Initialize the pure AI bot
 @st.cache_resource
 def load_bot():
-    """Loads the credit card bot with enhanced query processing."""
-    return RichDataCreditCardBot(data_files=["data/axis-atlas.json", "data/icici-epm.json"])
+    """Loads the AI-powered credit card bot for query processing."""
+    from utils.ai_powered_qa_engine import create_ai_powered_bot
+    
+    # Use 100% AI approach for better accuracy and maintainability
+    ai_bot = create_ai_powered_bot(
+        data_files=["data/axis-atlas.json", "data/icici-epm.json"]
+    )
+    
+    return ai_bot
 
 class QueryEnhancer:
     """Enhances user queries using lessons learned from wizard fixes."""
@@ -759,9 +767,79 @@ def main():
     bot = load_bot()
     enhancer = QueryEnhancer()
     
-    # Admin analytics viewer (accessible via URL parameter)
+    # Admin controls and analytics viewer (accessible via URL parameter)
     query_params = st.query_params
-    if query_params.get("admin") == "analytics":
+    if query_params.get("admin") == "engine":
+        # Engine testing dashboard
+        st.title("⚙️ Engine Testing Dashboard")
+        st.markdown("### 🔧 Engine Control Panel")
+        
+        # Show current engine stats
+        stats = bot.get_engine_stats()
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric("AI Rollout %", f"{stats['ai_rollout_percentage']}%")
+        with col2:
+            st.metric("AI Engine", "✅ Available" if stats['ai_engine_available'] else "❌ Unavailable")
+        with col3:
+            st.metric("Regex Engine", "✅ Available" if stats['regex_engine_available'] else "❌ Unavailable")
+        
+        st.markdown("---")
+        
+        # Engine mode controls
+        st.subheader("🎯 Force Engine Mode")
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            if st.button("🤖 Force AI Mode", use_container_width=True):
+                bot.force_ai_mode()
+                st.success("Switched to AI mode! All queries will use AI engine.")
+                st.rerun()
+        
+        with col2:
+            if st.button("🔧 Force Regex Mode", use_container_width=True):
+                bot.force_regex_mode()
+                st.success("Switched to Regex mode! All queries will use regex engine.")
+                st.rerun()
+        
+        with col3:
+            if st.button("⚖️ Balanced Mode", use_container_width=True):
+                bot.balanced_mode()
+                st.success("Switched to Balanced mode! 50/50 split between engines.")
+                st.rerun()
+        
+        # Test queries section
+        st.markdown("---")
+        st.subheader("🧪 Test Problematic Queries")
+        
+        test_queries = [
+            "So if i spend 8L on ICICI EPM, what are the total points and milestone i receive?",
+            "For paying joining fee for atlas card, how many miles i get?",
+            "What are the renewal benefits of the atlas card?",
+            "Which card is better for ₹50k dining spend?"
+        ]
+        
+        selected_query = st.selectbox("Select a test query:", test_queries)
+        
+        if st.button("🚀 Test Query", use_container_width=True):
+            with st.spinner("Processing test query..."):
+                result = bot.process_query(selected_query)
+                
+                st.success(f"✅ Query processed successfully!")
+                
+                col1, col2 = st.columns(2)
+                with col1:
+                    st.metric("Engine Used", result["engine_used"])
+                with col2:
+                    st.metric("Processing Time", f"{result['processing_time_ms']:.0f}ms")
+                
+                st.markdown("### Response:")
+                st.markdown(result["response"])
+        
+        return  # Exit main function to show only admin panel
+    
+    elif query_params.get("admin") == "analytics":
         # Redirect to enhanced analytics dashboard
         st.title("📊 Enhanced Analytics Dashboard")
         st.markdown("### 🚀 **New Enhanced Dashboard Available!**")
@@ -980,10 +1058,17 @@ def main():
                     # Get immediate response
                     enhanced_query = enhancer.enhance_query(query)
                     with st.spinner("Getting answer..."):
-                        response = bot.get_answer(enhanced_query)
+                        import time
+                        start_time = time.time()
+                        response = bot.process_query(enhanced_query)
+                        processing_time = (time.time() - start_time) * 1000
+                        
+                        # Show AI engine info
+                        st.caption(f"🤖 Processed by: AI Engine ({processing_time:.0f}ms)")
                     
-                    # Add assistant response
-                    st.session_state.messages.append({"role": "assistant", "content": response})
+                    # Add assistant response with engine info
+                    response_with_info = f"{response}\n\n*🤖 Processed by: AI Engine ({processing_time:.0f}ms)*"
+                    st.session_state.messages.append({"role": "assistant", "content": response_with_info})
                     st.rerun()
     else:
         # Show compact collapsible version after first interaction
@@ -1022,10 +1107,14 @@ def main():
                         # Get immediate response
                         enhanced_query = enhancer.enhance_query(query)
                         with st.spinner("Getting answer..."):
-                            response = bot.get_answer(enhanced_query)
+                            import time
+                            start_time = time.time()
+                            response = bot.process_query(enhanced_query)
+                            processing_time = (time.time() - start_time) * 1000
                         
-                        # Add assistant response
-                        st.session_state.messages.append({"role": "assistant", "content": response})
+                        # Add assistant response with engine info
+                        response_with_info = f"{response}\n\n*🤖 Processed by: AI Engine ({processing_time:.0f}ms)*"
+                        st.session_state.messages.append({"role": "assistant", "content": response_with_info})
                         st.rerun()
 
     # Display chat history with feedback buttons
@@ -1126,9 +1215,15 @@ def main():
             with st.chat_message("assistant"):
                 st.markdown(f"*Understanding your question as: \"{enhanced_query}\"*")
 
-        # Get response
+        # Get response using AI engine
         with st.spinner("Thinking..."):
-            response = bot.get_answer(enhanced_query)
+            import time
+            start_time = time.time()
+            response = bot.process_query(enhanced_query)
+            processing_time = (time.time() - start_time) * 1000
+            
+            # Show AI engine info for transparency
+            st.caption(f"🤖 Processed by: AI Engine ({processing_time:.0f}ms)")
         
         # Display response
         with st.chat_message("assistant"):

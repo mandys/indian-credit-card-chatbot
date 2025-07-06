@@ -18,6 +18,9 @@ query_patterns.json
 CLAUDE.md
 CLAUDE_CODE_PROMPT.md
 
+# Ignore backup folder
+backup/
+
 # Ignore temporary files
 *.tmp
 *.log
