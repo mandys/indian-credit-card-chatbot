@@ -7,7 +7,30 @@ import json
 import os
 import tempfile
 from typing import Dict, List, Optional
-import streamlit as st
+
+# Optional Streamlit import
+try:
+    import streamlit as st
+    STREAMLIT_AVAILABLE = True
+except ImportError:
+    STREAMLIT_AVAILABLE = False
+    # Create a mock st object for non-Streamlit contexts
+    class MockStreamlit:
+        class secrets:
+            @staticmethod
+            def get(key, default=None):
+                return default
+        class sidebar:
+            @staticmethod
+            def success(msg):
+                pass
+            @staticmethod
+            def warning(msg):
+                pass
+        @staticmethod
+        def warning(msg):
+            pass
+    st = MockStreamlit()
 
 class PersistentStorageManager:
     """
@@ -19,20 +42,28 @@ class PersistentStorageManager:
         self.storage_type = self._detect_storage_type()
         self.local_cache = {}
         
-        # Debug info for troubleshooting
-        if st.secrets.get('GITHUB_TOKEN') and st.secrets.get('GIST_ID'):
-            st.sidebar.success(f"✅ Storage: {self.storage_type}")
-        else:
-            st.sidebar.warning(f"⚠️ Storage: {self.storage_type}")
+        # Debug info for troubleshooting (only in Streamlit context)
+        try:
+            if st.secrets.get('GITHUB_TOKEN') and st.secrets.get('GIST_ID'):
+                st.sidebar.success(f"✅ Storage: {self.storage_type}")
+            else:
+                st.sidebar.warning(f"⚠️ Storage: {self.storage_type}")
+        except Exception:
+            # Not in Streamlit context, skip sidebar updates
+            pass
     
     def _detect_storage_type(self) -> str:
         """Detect available storage type based on environment."""
         
         # Check if GitHub Gist secrets are available (prioritize this for Streamlit Cloud)
-        if st.secrets.get('GITHUB_TOKEN') and st.secrets.get('GIST_ID'):
-            # Force GitHub Gist if secrets are available
-            print(f"✅ GitHub Gist detected - Token: {st.secrets.get('GITHUB_TOKEN')[:10]}...")
-            return 'github_gist'
+        try:
+            if st.secrets.get('GITHUB_TOKEN') and st.secrets.get('GIST_ID'):
+                # Force GitHub Gist if secrets are available
+                print(f"✅ GitHub Gist detected - Token: {st.secrets.get('GITHUB_TOKEN')[:10]}...")
+                return 'github_gist'
+        except Exception:
+            # Not in Streamlit context or no secrets available
+            pass
         
         # Check if running on Streamlit Cloud (various hostname patterns)
         hostname = os.getenv('HOSTNAME', '').lower()
@@ -45,12 +76,18 @@ class PersistentStorageManager:
         
         if is_streamlit_cloud:
             # Option 2: Simple HTTP endpoint
-            if st.secrets.get('STORAGE_ENDPOINT'):
-                return 'http_storage'
+            try:
+                if st.secrets.get('STORAGE_ENDPOINT'):
+                    return 'http_storage'
+            except Exception:
+                pass
             
             # Option 3: Session state only (temporary)
             else:
-                st.warning("⚠️ No persistent storage configured. Data will be lost on redeployment.")
+                try:
+                    st.warning("⚠️ No persistent storage configured. Data will be lost on redeployment.")
+                except Exception:
+                    pass
                 return 'session_only'
         
         # Local development - use files

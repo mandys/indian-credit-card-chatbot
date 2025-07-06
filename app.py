@@ -616,22 +616,26 @@ def log_feedback(query: str, response: str, feedback_type: str, improvement_sugg
     
     # Analyze the query for comprehensive analytics
     try:
-        # Initialize a temporary bot instance for analytics (reuse session bot if available)
+        # Initialize a temporary AI bot instance for analytics (reuse session bot if available)
         if not hasattr(st.session_state, 'analytics_bot'):
-            from utils.qa_engine import RichDataCreditCardBot
-            st.session_state.analytics_bot = RichDataCreditCardBot([
+            from utils.ai_powered_qa_engine import create_ai_powered_bot
+            st.session_state.analytics_bot = create_ai_powered_bot([
                 "data/axis-atlas.json", 
                 "data/icici-epm.json"
             ])
         
-        bot = st.session_state.analytics_bot
+        ai_bot = st.session_state.analytics_bot
         
         # Preprocess query like the main engine does
-        processed_query = bot.preprocess_currency_abbreviations(query.lower())
+        processed_query = ai_bot._preprocess_currency(query.lower())
         
-        # Detect intent and extract analytics
-        intent_detected = bot.detect_intent(processed_query)
-        cards_mentioned = bot.extract_card_names(query.lower())
+        # Extract basic analytics from the query
+        intent_detected = 'ai_powered'  # Since we're using AI for everything now
+        cards_mentioned = []
+        if 'axis' in query.lower() or 'atlas' in query.lower():
+            cards_mentioned.append('Axis Bank Atlas Credit Card')
+        if 'icici' in query.lower() or 'emeralde' in query.lower() or 'epm' in query.lower():
+            cards_mentioned.append('ICICI Bank Emeralde Private Metal Credit Card')
         
         # Extract spending amount if present
         spend_amount = None
@@ -769,77 +773,7 @@ def main():
     
     # Admin controls and analytics viewer (accessible via URL parameter)
     query_params = st.query_params
-    if query_params.get("admin") == "engine":
-        # Engine testing dashboard
-        st.title("⚙️ Engine Testing Dashboard")
-        st.markdown("### 🔧 Engine Control Panel")
-        
-        # Show current engine stats
-        stats = bot.get_engine_stats()
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            st.metric("AI Rollout %", f"{stats['ai_rollout_percentage']}%")
-        with col2:
-            st.metric("AI Engine", "✅ Available" if stats['ai_engine_available'] else "❌ Unavailable")
-        with col3:
-            st.metric("Regex Engine", "✅ Available" if stats['regex_engine_available'] else "❌ Unavailable")
-        
-        st.markdown("---")
-        
-        # Engine mode controls
-        st.subheader("🎯 Force Engine Mode")
-        col1, col2, col3 = st.columns(3)
-        
-        with col1:
-            if st.button("🤖 Force AI Mode", use_container_width=True):
-                bot.force_ai_mode()
-                st.success("Switched to AI mode! All queries will use AI engine.")
-                st.rerun()
-        
-        with col2:
-            if st.button("🔧 Force Regex Mode", use_container_width=True):
-                bot.force_regex_mode()
-                st.success("Switched to Regex mode! All queries will use regex engine.")
-                st.rerun()
-        
-        with col3:
-            if st.button("⚖️ Balanced Mode", use_container_width=True):
-                bot.balanced_mode()
-                st.success("Switched to Balanced mode! 50/50 split between engines.")
-                st.rerun()
-        
-        # Test queries section
-        st.markdown("---")
-        st.subheader("🧪 Test Problematic Queries")
-        
-        test_queries = [
-            "So if i spend 8L on ICICI EPM, what are the total points and milestone i receive?",
-            "For paying joining fee for atlas card, how many miles i get?",
-            "What are the renewal benefits of the atlas card?",
-            "Which card is better for ₹50k dining spend?"
-        ]
-        
-        selected_query = st.selectbox("Select a test query:", test_queries)
-        
-        if st.button("🚀 Test Query", use_container_width=True):
-            with st.spinner("Processing test query..."):
-                result = bot.process_query(selected_query)
-                
-                st.success(f"✅ Query processed successfully!")
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    st.metric("Engine Used", result["engine_used"])
-                with col2:
-                    st.metric("Processing Time", f"{result['processing_time_ms']:.0f}ms")
-                
-                st.markdown("### Response:")
-                st.markdown(result["response"])
-        
-        return  # Exit main function to show only admin panel
-    
-    elif query_params.get("admin") == "analytics":
+    if query_params.get("admin") == "analytics":
         # Redirect to enhanced analytics dashboard
         st.title("📊 Enhanced Analytics Dashboard")
         st.markdown("### 🚀 **New Enhanced Dashboard Available!**")
@@ -939,7 +873,7 @@ def main():
         
         return  # Stop here, don't show the main chatbot
     
-    elif query_params.get("admin") == "feedback":
+    if query_params.get("admin") == "feedback":
         st.title("📊 Feedback Dashboard")
         
         # Load feedback data from persistent storage (works with GitHub Gist)

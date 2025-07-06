@@ -153,12 +153,24 @@ CRITICAL: DISTINGUISH BETWEEN FEES AND BENEFITS:
 - "For paying joining fee, how many miles/points?" = asking about WELCOME BENEFITS, NOT fees
 - Always check if user is asking about cost vs rewards
 
-CRITICAL: ICICI EPM ₹8L SPEND MILESTONE:
-- ₹8,00,000 spend qualifies for BOTH EaseMyTrip vouchers (₹4L + ₹8L thresholds)
-- First voucher: ₹3,000 (at ₹4L spend)
-- Second voucher: ₹3,000 (at ₹8L spend)  
-- Total milestone: ₹6,000 in EaseMyTrip vouchers
-- NEVER say "no milestone benefits" for ₹8L spend on ICICI EPM
+CRITICAL: MILESTONE BENEFITS CALCULATION:
+- Check "milestones" section in the provided data for accurate milestone information
+- For ICICI EPM ₹8L spend example: Regular points + milestone vouchers (as per data)
+- For Axis Atlas yearly spends: Regular miles + ALL applicable milestone miles (cumulative)
+- MILESTONE LOGIC: Milestones are CUMULATIVE - you earn ALL milestones up to your spend level
+- CRITICAL: For ₹7.5L spend on Atlas:
+  * ✅ ₹3L milestone: 2500 miles (earned because 7.5L > 3L)
+  * ✅ ₹7.5L milestone: 2500 miles (earned because 7.5L >= 7.5L) 
+  * ❌ ₹15L milestone: NOT earned (because 7.5L < 15L)
+  * TOTAL MILESTONE: 2500 + 2500 = 5000 miles
+- CRITICAL: For ₹15L spend on Atlas:
+  * ✅ ₹3L milestone: 2500 miles (earned because 15L > 3L)
+  * ✅ ₹7.5L milestone: 2500 miles (earned because 15L > 7.5L)
+  * ✅ ₹15L milestone: 5000 miles (earned because 15L >= 15L)
+  * TOTAL MILESTONE: 2500 + 2500 + 5000 = 10000 miles
+  * TOTAL EARNING: 30000 regular + 10000 milestone = 40000 miles
+- ALWAYS calculate regular earning first, then ADD ALL applicable milestone benefits
+- NEVER say "no milestone benefits" without checking the data
 
 QUERY TYPES & EXAMPLES:
 {examples_text}
@@ -177,15 +189,25 @@ CALCULATION GUIDELINES - CRITICAL FOR ACCURACY:
 - CRITICAL: User spent money, so they ALWAYS earn regular points PLUS any milestones
 
 EXCLUSIONS - ABSOLUTELY CRITICAL:
-- ALWAYS check "accrual_exclusions" and "spend_exclusion_policy" fields in the data
-- If category is NOT in exclusions list, it earns general rate rewards
-- Axis Atlas ONLY excludes: Gold/Jewellery, Rent, Wallet, Insurance, Fuel, Government Institution, Utilities, Telecom
-- EDUCATION IS NOT EXCLUDED on Axis Atlas - it earns 2 EDGE Miles per ₹100
-- ICICI EPM excludes: Government services, Tax, Rent, Fuel payments, EMI conversions  
-- ICICI EPM caps: Utility (1000 pts), Grocery (1000 pts), Insurance (5000 pts), Education (1000 pts)
-- EXAMPLE: Education = earns 2 miles/₹100 on Axis (NOT excluded), capped on ICICI
-- EXAMPLE: Rent = 0 rewards on both cards (excluded on both)
-- EXAMPLE: Utility = 0 on Axis (excluded), capped earning on ICICI (1000 pt cap)
+- ALWAYS check "accrual_exclusions" and "spend_exclusion_policy" fields in the provided data
+- IGNORE any assumptions - use ONLY the actual data provided
+- If category is NOT listed in "accrual_exclusions", it DOES earn rewards
+- Check "capping_per_statement_cycle" for caps on earning categories
+- INSURANCE EXAMPLE: Check if "insurance" appears in accrual_exclusions list
+  * If NOT in exclusions → Earns rewards (check for caps in capping_per_statement_cycle section)
+  * If IN exclusions → No rewards earned
+  * ICICI EPM: Insurance NOT in accrual_exclusions, so it DOES earn points with 5000 point cap
+  * AXIS ATLAS: Insurance IS in accrual_exclusions, so it does NOT earn points
+
+TRAVEL CATEGORY DETECTION - CRITICAL FOR HOTEL/AIRLINE QUERIES:
+- ALWAYS check if "travel" section exists in the card data
+- For HOTEL queries: Look for "Hotels", "Direct Hotels", or "hotel" in travel.categories
+- For AIRLINE queries: Look for "Airlines", "Direct Airlines", or "airline" in travel.categories  
+- If found in travel.categories → Use the travel.rate (e.g., "5 EDGE Miles/₹100")
+- If NOT found in travel.categories → Use rate_general
+- AXIS ATLAS EXAMPLE: "Direct Hotels" is in travel.categories, so hotels earn 5x rate, NOT general 2x rate
+- NEVER default to general rate if travel section exists with relevant categories
+- NEVER make assumptions - always verify against the actual JSON data provided
 
 MATHEMATICAL ACCURACY - CRITICAL:
 - ALWAYS show step-by-step calculation: Spend Amount ÷ Spend Unit × Points Rate = Total Points
@@ -263,7 +285,7 @@ FOR MULTI-CATEGORY SPENDING QUERIES:
             return f"I apologize, but I'm having trouble processing your request right now. Please try again. Error: {str(e)}"
     
     def _create_query_prompt(self, user_query: str, conversation_history: List[Dict] = None) -> str:
-        """Create the complete prompt with user query and full card data."""
+        """Create the complete prompt with user query and relevant card data."""
         
         # Include conversation context if available
         context_text = ""
@@ -273,17 +295,69 @@ FOR MULTI-CATEGORY SPENDING QUERIES:
                 context_text += f"User: {exchange.get('query', '')}\n"
                 context_text += f"Assistant: {exchange.get('response', '')}\n"
         
+        # Extract only relevant card data for better AI processing
+        relevant_data = self._extract_relevant_data(user_query)
+        
         prompt = f"""
 USER QUESTION: {user_query}
 
 {context_text}
 
-COMPLETE CREDIT CARD DATA:
-{json.dumps(self.cards_data, indent=2)}
+RELEVANT CREDIT CARD DATA:
+{json.dumps(relevant_data, indent=2)}
 
 Please provide a comprehensive answer based on the credit card data above.
 """
         return prompt
+    
+    def _extract_relevant_data(self, user_query: str) -> Dict:
+        """Extract only relevant data sections based on the query to improve AI accuracy."""
+        query_lower = user_query.lower()
+        relevant_data = {}
+        
+        # Determine which cards to include
+        cards_to_include = []
+        if 'axis' in query_lower or 'atlas' in query_lower:
+            cards_to_include.append('Axis Bank Atlas Credit Card')
+        if 'icici' in query_lower or 'emeralde' in query_lower or 'epm' in query_lower:
+            cards_to_include.append('ICICI Bank Emeralde Private Metal Credit Card')
+        
+        # If no specific card mentioned, include both
+        if not cards_to_include:
+            cards_to_include = list(self.cards_data.keys())
+        
+        # Extract relevant sections based on query type
+        for card_name in cards_to_include:
+            if card_name not in self.cards_data:
+                continue
+                
+            card_data = self.cards_data[card_name]
+            relevant_card_data = {
+                'name': card_name,
+                'rewards': card_data.get('rewards', {}),
+            }
+            
+            # Add specific sections based on query content
+            if any(word in query_lower for word in ['fee', 'cost', 'charge', 'annual', 'joining']):
+                relevant_card_data['fees'] = card_data.get('fees', {})
+            
+            if any(word in query_lower for word in ['welcome', 'joining', 'benefit', 'bonus']):
+                relevant_card_data['welcome_benefits'] = card_data.get('welcome_benefits', {})
+            
+            if any(word in query_lower for word in ['milestone', 'tier', 'spend', 'yearly', 'annual']):
+                relevant_card_data['milestones'] = card_data.get('milestones', [])
+                relevant_card_data['tier_structure'] = card_data.get('tier_structure', {})
+            
+            if any(word in query_lower for word in ['lounge', 'airport']):
+                relevant_card_data['lounge_access'] = card_data.get('lounge_access', {})
+            
+            if any(word in query_lower for word in ['transfer', 'partner', 'airline', 'redeem']):
+                relevant_card_data['miles_transfer'] = card_data.get('miles_transfer', {})
+                relevant_card_data['redemption'] = card_data.get('redemption', {})
+            
+            relevant_data[card_name] = relevant_card_data
+        
+        return relevant_data
     
     def _get_gemini_response(self, prompt: str) -> str:
         """Get response from Gemini API."""
@@ -294,7 +368,7 @@ Please provide a comprehensive answer based on the credit card data above.
             full_prompt,
             generation_config=genai.types.GenerationConfig(
                 temperature=0.1,
-                max_output_tokens=1000,
+                max_output_tokens=2000,
             )
         )
         
@@ -311,7 +385,7 @@ Please provide a comprehensive answer based on the credit card data above.
                 {"role": "user", "content": prompt}
             ],
             temperature=0.1,
-            max_tokens=1000
+            max_tokens=2000
         )
         
         return response.choices[0].message.content

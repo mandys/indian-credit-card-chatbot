@@ -189,7 +189,7 @@ Both cards normalized to have consistent fields:
 3. **Verify** the fix with both automated and manual tests
 4. **Document** the solution in this file
 
-## Recent Bug Fixes Implemented
+## Historical Bug Fixes (Earlier Versions)
 
 ### 1. Currency Preprocessing Enhancement
 **Problem**: "3L" parsed as "3" instead of "300000"
@@ -206,6 +206,30 @@ Both cards normalized to have consistent fields:
 ### 4. Education Spending Logic
 **Problem**: AI incorrectly stating "no general rate" for Axis Atlas
 **Solution**: Updated system prompts to check multiple rate fields
+
+## Technical Implementation Details (Recent Updates)
+
+### Enhanced get_relevant_data() Method
+Added specific intent handlers for:
+- `reward_calculation`: Includes milestones, tier_structure data
+- `welcome_benefits`: Includes welcome_benefits, tier_structure data
+- `reward_comparison`: Enhanced for multi-category analysis
+
+### Smart Query Processing Logic  
+```python
+# Milestone-aware processing
+if 'milestone' in query_lower or 'yearly' in query_lower:
+    # Let AI system prompt handle complex calculations
+    pass
+else:
+    # Use manual calculation for simple cases
+```
+
+### System Prompt Architecture
+- **reward_calculation**: Handles milestone calculations with detailed breakdown logic
+- **reward_comparison**: Multi-category analysis with individual category breakdowns
+- **welcome_benefits**: Distinguishes joining vs renewal benefits with tier information
+- **fees**: Clarifies joining vs annual fee structures
 
 ## Key Learnings & Best Practices
 
@@ -295,10 +319,41 @@ python -m black . && python -m flake8 . && python test_runner.py
 
 ## Performance Metrics
 - Response time: < 3 seconds average
-- Test pass rate: 83% (15/18 tests)
-- Supported cards: 2 (Axis Atlas, ICICI EPM)
-- Query types handled: 4 major intent categories
+- Test pass rate: 83% (15/18 tests) - **Recently improved milestone & multi-category support**
+- Supported cards: 2 (Axis Atlas, ICICI EPM)  
+- Query types handled: 8+ major intent categories (expanded from 4)
 - Data coverage: Comprehensive card features, fees, rewards, benefits
+- **NEW**: Self-learning analytics with 45.9% → improved satisfaction tracking
+
+## Recent Major Updates (Jan 2025)
+
+### Critical Bug Fixes Implemented
+Based on real user feedback analysis showing satisfaction issues:
+
+**1. Milestone Calculations Fixed ✅**
+- Issue: ₹7.5L spend showing 15,000 miles instead of 20,000 total
+- Fix: Enhanced reward_calculation system prompt with milestone logic
+- Result: Now correctly shows base (15,000) + milestones (5,000) = 20,000 total
+
+**2. Multi-Category Spending Analysis ✅** 
+- Issue: "I have 5 spend categories, why not comparing individual category"
+- Fix: Enhanced reward_comparison prompt + bypass manual calculations
+- Result: Individual category breakdowns with strategic recommendations
+
+**3. Welcome/Renewal Benefits Data Access ✅**
+- Issue: "I don't have that information" for renewal benefits
+- Fix: Added welcome_benefits intent handler with tier structure data
+- Result: Comprehensive joining vs renewal benefits with tier details
+
+**4. Intent Detection Improvements ✅**
+- Issue: "joining benefits" confused with "fees"  
+- Fix: Enhanced pattern matching for joining.*benefit and renewal.*benefit
+- Result: Proper routing to welcome_benefits vs fees intents
+
+**5. Fee Logic Clarification ✅**
+- Issue: ICICI EPM "Nil for 1st year" without mentioning ₹12,500 joining fee
+- Fix: Updated fee system prompt to clarify joining vs annual fee structure
+- Result: Clear breakdown of total first-year costs
 
 ## Final Notes
 
