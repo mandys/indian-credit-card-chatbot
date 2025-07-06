@@ -92,7 +92,7 @@ class RichDataCreditCardBot:
         specific_patterns = {
             'fees': [r'fee', r'charge', r'cost', r'price'],
             'annual_fee_reversal_spend_threshold': [r'annual fee waiver', r'fee waiver', r'waiver.*spend', r'spend.*waiver', r'criteria.*waiver', r'waiver.*condition', r'annual fee.*waived', r'fee.*reversal'],
-            'welcome_benefits': [r'welcome', r'joining bonus', r'sign-up'],
+            'welcome_benefits': [r'welcome', r'joining bonus', r'joining.*benefit', r'sign-up', r'welcome.*benefit', r'renewal.*benefit'],
             'rewards': [r'reward', r'point', r'earn rate', r'cashback'],
             'reward_comparison': [r'which card.*more reward', r'which.*better reward', r'compare reward', r'more reward', r'better reward', r'which card.*spend.*reward', r'reward.*comparison'],
             'milestones': [r'milestone'],
@@ -530,6 +530,8 @@ class RichDataCreditCardBot:
                     card_info = self.cards_data[name]
                     context[name] = {
                         'rewards': card_info.get('rewards', {}),
+                        'milestones': card_info.get('milestones', []),
+                        'tier_structure': card_info.get('tier_structure', {}),
                         'name': name
                     }
             return context
@@ -741,156 +743,175 @@ class RichDataCreditCardBot:
         """
         # Handle reward calculation queries with specific card rates
         if intent == 'reward_calculation':
-            spend_amount = self.extract_spend_amount(query)
-            
-            # Detect spending category from the query
-            spending_category = None
             query_lower = query.lower()
-            category_keywords = {
-                'hotel': ['hotel', 'hotels'],
-                'travel': ['travel', 'trip', 'airline', 'flight', 'flights'],
-                'dining': ['dining', 'restaurant', 'food'],
-                'fuel': ['fuel', 'petrol', 'gas'],
-                'utility': ['utility', 'utilities'],
-                'rent': ['rent'],
-                'education': ['education', 'school', 'college'],
-                'insurance': ['insurance'],
-                'government': ['government', 'govt', 'tax'],
-                'gaming': ['gaming', 'games'],
-                'wallet': ['wallet', 'paytm', 'phonepe', 'gpay'],
-                'gold': ['gold', 'jewellery', 'jewelry']
-            }
             
-            for category, keywords in category_keywords.items():
-                if any(keyword in query_lower for keyword in keywords):
-                    spending_category = category
-                    break
-            
-            if spend_amount and relevant_data:
-                calculations = []
-                for card_name in relevant_data.keys():
-                    calc_result = self.calculate_rewards(card_name, spend_amount, spending_category)
-                    if 'error' not in calc_result:
-                        calculations.append(calc_result)
-                
-                if calculations:
-                    # Create a detailed response for single card
-                    response_text = f"For spending ₹{spend_amount:,}:\n\n"
-                    
-                    for calc in calculations:
-                        if 'points_earned' in calc:
-                            response_text += f"**{calc['card']}**: {calc['points_earned']} points\n"
-                            response_text += f"- Rate: {calc['rate']}\n"
-                            response_text += f"- Calculation: {calc['calculation']}\n"
-                        elif 'miles_earned' in calc:
-                            response_text += f"**{calc['card']}**: {calc['miles_earned']} miles\n"
-                            response_text += f"- Rate: {calc['rate']}\n"
-                            response_text += f"- Calculation: {calc['calculation']}\n"
-                    
-                    return response_text
-                else:
-                    return "I couldn't calculate rewards for the specified card. Please make sure you're asking about a supported card."
+            # Check if this is a milestone-related query - if so, skip manual calculation and use AI system prompt
+            if 'milestone' in query_lower or 'yearly' in query_lower or 'annual' in query_lower or '7.5l' in query_lower or '15l' in query_lower or '3l' in query_lower:
+                # Let the AI system prompt handle milestone calculations
+                pass
             else:
-                return "Please specify a spend amount to calculate rewards (e.g., 'How many points would I earn for spending ₹50,000?')"
+                spend_amount = self.extract_spend_amount(query)
+                
+                # Detect spending category from the query
+                spending_category = None
+                category_keywords = {
+                    'hotel': ['hotel', 'hotels'],
+                    'travel': ['travel', 'trip', 'airline', 'flight', 'flights'],
+                    'dining': ['dining', 'restaurant', 'food'],
+                    'fuel': ['fuel', 'petrol', 'gas'],
+                    'utility': ['utility', 'utilities'],
+                    'rent': ['rent'],
+                    'education': ['education', 'school', 'college'],
+                    'insurance': ['insurance'],
+                    'government': ['government', 'govt', 'tax'],
+                    'gaming': ['gaming', 'games'],
+                    'wallet': ['wallet', 'paytm', 'phonepe', 'gpay'],
+                    'gold': ['gold', 'jewellery', 'jewelry']
+                }
+                
+                for category, keywords in category_keywords.items():
+                    if any(keyword in query_lower for keyword in keywords):
+                        spending_category = category
+                        break
+                
+                if spend_amount and relevant_data:
+                    calculations = []
+                    for card_name in relevant_data.keys():
+                        calc_result = self.calculate_rewards(card_name, spend_amount, spending_category)
+                        if 'error' not in calc_result:
+                            calculations.append(calc_result)
+                    
+                    if calculations:
+                        # Create a detailed response for single card
+                        response_text = f"For spending ₹{spend_amount:,}:\n\n"
+                        
+                        for calc in calculations:
+                            if 'points_earned' in calc:
+                                response_text += f"**{calc['card']}**: {calc['points_earned']} points\n"
+                                response_text += f"- Rate: {calc['rate']}\n"
+                                response_text += f"- Calculation: {calc['calculation']}\n"
+                            elif 'miles_earned' in calc:
+                                response_text += f"**{calc['card']}**: {calc['miles_earned']} miles\n"
+                                response_text += f"- Rate: {calc['rate']}\n"
+                                response_text += f"- Calculation: {calc['calculation']}\n"
+                        
+                        return response_text
+                    else:
+                        return "I couldn't calculate rewards for the specified card. Please make sure you're asking about a supported card."
+                else:
+                    return "Please specify a spend amount to calculate rewards (e.g., 'How many points would I earn for spending ₹50,000?')"
         
         # Handle reward comparison queries with calculations
         if intent == 'reward_comparison':
-            spend_amount = self.extract_spend_amount(query)
-            
-            # Detect spending category from the query
-            spending_category = None
             query_lower = query.lower()
-            category_keywords = {
-                'hotel': ['hotel', 'hotels'],
-                'travel': ['travel', 'trip', 'airline', 'flight', 'flights'],
-                'dining': ['dining', 'restaurant', 'food'],
-                'fuel': ['fuel', 'petrol', 'gas'],
-                'utility': ['utility', 'utilities'],
-                'rent': ['rent'],
-                'education': ['education', 'school', 'college'],
-                'insurance': ['insurance'],
-                'government': ['government', 'govt', 'tax'],
-                'gaming': ['gaming', 'games'],
-                'wallet': ['wallet', 'paytm', 'phonepe', 'gpay'],
-                'gold': ['gold', 'jewellery', 'jewelry']
-            }
             
-            for category, keywords in category_keywords.items():
-                if any(keyword in query_lower for keyword in keywords):
-                    spending_category = category
-                    break
-            
-            if spend_amount and relevant_data:
-                calculations = []
-                for card_name in relevant_data.keys():
-                    calc_result = self.calculate_rewards(card_name, spend_amount, spending_category)
-                    if 'error' not in calc_result:
-                        calculations.append(calc_result)
+            # Check if this is a multi-category query - if so, let AI system prompt handle it
+            if ('split as' in query_lower or 'monthly spends' in query_lower or 
+                ('rent' in query_lower and 'utility' in query_lower and 'grocery' in query_lower) or
+                ('20%' in query_lower and '10%' in query_lower) or
+                'individual category' in query_lower):
+                # Let the AI system prompt handle multi-category analysis
+                pass
+            else:
+                spend_amount = self.extract_spend_amount(query)
                 
-                if calculations:
-                    # Create a detailed comparison
-                    comparison_text = f"For spending ₹{spend_amount:,}:\n\n"
+                # Detect spending categories from the query (support multiple categories)
+                spending_categories = []
+                category_keywords = {
+                    'hotel': ['hotel', 'hotels'],
+                    'travel': ['travel', 'trip', 'airline', 'flight', 'flights'],
+                    'dining': ['dining', 'restaurant', 'food', 'eating out'],
+                    'fuel': ['fuel', 'petrol', 'gas'],
+                    'utility': ['utility', 'utilities'],
+                    'rent': ['rent'],
+                    'education': ['education', 'school', 'college'],
+                    'insurance': ['insurance'],
+                    'government': ['government', 'govt', 'tax'],
+                    'gaming': ['gaming', 'games'],
+                    'wallet': ['wallet', 'paytm', 'phonepe', 'gpay'],
+                    'gold': ['gold', 'jewellery', 'jewelry'],
+                    'grocery': ['grocery', 'groceries', 'supermarket'],
+                    'gift_cards': ['gift card', 'gift cards', 'voucher', 'vouchers']
+                }
+                
+                for category, keywords in category_keywords.items():
+                    if any(keyword in query_lower for keyword in keywords):
+                        spending_categories.append(category)
+                
+                # For backward compatibility, set spending_category to the first found category
+                spending_category = spending_categories[0] if spending_categories else None
+                
+                if spend_amount and relevant_data:
+                    calculations = []
+                    for card_name in relevant_data.keys():
+                        calc_result = self.calculate_rewards(card_name, spend_amount, spending_category)
+                        if 'error' not in calc_result:
+                            calculations.append(calc_result)
                     
-                    for calc in calculations:
-                        if 'points_earned' in calc:
-                            comparison_text += f"**{calc['card']}**: {calc['points_earned']} points\n"
-                            comparison_text += f"- Rate: {calc['rate']}\n"
-                            comparison_text += f"- Calculation: {calc['calculation']}\n\n"
-                        elif 'miles_earned' in calc:
-                            comparison_text += f"**{calc['card']}**: {calc['miles_earned']} miles\n"
-                            comparison_text += f"- Rate: {calc['rate']}\n"
-                            comparison_text += f"- Calculation: {calc['calculation']}\n\n"
-                    
-                    # Determine winner
-                    if len(calculations) >= 2:
-                        icici_points = next((c['points_earned'] for c in calculations if 'points_earned' in c), 0)
-                        atlas_miles = next((c['miles_earned'] for c in calculations if 'miles_earned' in c), 0)
+                    if calculations:
+                        # Create a detailed comparison
+                        comparison_text = f"For spending ₹{spend_amount:,}:\n\n"
                         
-                        if icici_points > atlas_miles:
-                            comparison_text += f"**Winner**: ICICI Emeralde gives you more rewards ({icici_points} points vs {atlas_miles} miles)"
-                        elif atlas_miles > icici_points:
-                            comparison_text += f"**Winner**: Axis Atlas gives you more rewards ({atlas_miles} miles vs {icici_points} points)"
-                        else:
-                            comparison_text += "**Result**: Both cards give similar reward value"
-                    
-                    return comparison_text
-                else:
-                    return "I couldn't calculate rewards for the specified cards. Please make sure you're asking about supported cards."
-            elif not spend_amount and spending_category:
-                # Handle queries without spend amount but with specific category
-                if spending_category in ['travel', 'hotel'] and relevant_data:
-                    comparison_text = f"For {spending_category} spending:\n\n"
-                    
-                    # Check Axis Atlas
-                    if 'Axis Bank Atlas Credit Card' in relevant_data:
-                        comparison_text += "**Axis Bank Atlas Credit Card**: 5 EDGE Miles per ₹100 spent (travel category, up to ₹2L monthly cap), then 2x for excess\n"
-                        comparison_text += "- Return Value: 5% (5 miles worth ₹1 each per ₹100)\n\n"
-                    
-                    # Check ICICI EPM
-                    if 'ICICI Bank Emeralde Private Metal Credit Card' in relevant_data:
-                        comparison_text += "**ICICI Bank Emeralde Private Metal Credit Card**: 6 points per ₹200 spent (general rate)\n"
-                        comparison_text += "- Return Value: 3% (6 points worth ₹1 each per ₹200)\n\n"
-                    
-                    comparison_text += "**Winner**: Axis Atlas is better for travel/airline bookings due to the 5% return rate vs ICICI's 3% return rate."
-                    return comparison_text
+                        for calc in calculations:
+                            if 'points_earned' in calc:
+                                comparison_text += f"**{calc['card']}**: {calc['points_earned']} points\n"
+                                comparison_text += f"- Rate: {calc['rate']}\n"
+                                comparison_text += f"- Calculation: {calc['calculation']}\n\n"
+                            elif 'miles_earned' in calc:
+                                comparison_text += f"**{calc['card']}**: {calc['miles_earned']} miles\n"
+                                comparison_text += f"- Rate: {calc['rate']}\n"
+                                comparison_text += f"- Calculation: {calc['calculation']}\n\n"
                         
-                elif spending_category == 'government' and relevant_data:
-                    comparison_text = f"For government spending:\n\n"
-                    
-                    # Check Axis Atlas
-                    if 'Axis Bank Atlas Credit Card' in relevant_data:
-                        comparison_text += "**Axis Bank Atlas Credit Card**: No rewards earned (government spending excluded)\n\n"
-                    
-                    # Check ICICI EPM  
-                    if 'ICICI Bank Emeralde Private Metal Credit Card' in relevant_data:
-                        comparison_text += "**ICICI Bank Emeralde Private Metal Credit Card**: No rewards earned (government services excluded)\n\n"
-                    
-                    comparison_text += "**Result**: Neither card offers rewards for government spending as both exclude this category."
-                    return comparison_text
+                        # Determine winner
+                        if len(calculations) >= 2:
+                            icici_points = next((c['points_earned'] for c in calculations if 'points_earned' in c), 0)
+                            atlas_miles = next((c['miles_earned'] for c in calculations if 'miles_earned' in c), 0)
+                            
+                            if icici_points > atlas_miles:
+                                comparison_text += f"**Winner**: ICICI Emeralde gives you more rewards ({icici_points} points vs {atlas_miles} miles)"
+                            elif atlas_miles > icici_points:
+                                comparison_text += f"**Winner**: Axis Atlas gives you more rewards ({atlas_miles} miles vs {icici_points} points)"
+                            else:
+                                comparison_text += "**Result**: Both cards give similar reward value"
+                        
+                        return comparison_text
+                    else:
+                        return "I couldn't calculate rewards for the specified cards. Please make sure you're asking about supported cards."
+                elif not spend_amount and spending_category:
+                    # Handle queries without spend amount but with specific category
+                    if spending_category in ['travel', 'hotel'] and relevant_data:
+                        comparison_text = f"For {spending_category} spending:\n\n"
+                        
+                        # Check Axis Atlas
+                        if 'Axis Bank Atlas Credit Card' in relevant_data:
+                            comparison_text += "**Axis Bank Atlas Credit Card**: 5 EDGE Miles per ₹100 spent (travel category, up to ₹2L monthly cap), then 2x for excess\n"
+                            comparison_text += "- Return Value: 5% (5 miles worth ₹1 each per ₹100)\n\n"
+                        
+                        # Check ICICI EPM
+                        if 'ICICI Bank Emeralde Private Metal Credit Card' in relevant_data:
+                            comparison_text += "**ICICI Bank Emeralde Private Metal Credit Card**: 6 points per ₹200 spent (general rate)\n"
+                            comparison_text += "- Return Value: 3% (6 points worth ₹1 each per ₹200)\n\n"
+                        
+                        comparison_text += "**Winner**: Axis Atlas is better for travel/airline bookings due to the 5% return rate vs ICICI's 3% return rate."
+                        return comparison_text
+                            
+                    elif spending_category == 'government' and relevant_data:
+                        comparison_text = f"For government spending:\n\n"
+                        
+                        # Check Axis Atlas
+                        if 'Axis Bank Atlas Credit Card' in relevant_data:
+                            comparison_text += "**Axis Bank Atlas Credit Card**: No rewards earned (government spending excluded)\n\n"
+                        
+                        # Check ICICI EPM  
+                        if 'ICICI Bank Emeralde Private Metal Credit Card' in relevant_data:
+                            comparison_text += "**ICICI Bank Emeralde Private Metal Credit Card**: No rewards earned (government services excluded)\n\n"
+                        
+                        comparison_text += "**Result**: Neither card offers rewards for government spending as both exclude this category."
+                        return comparison_text
+                    else:
+                        return "Please specify a spend amount to compare rewards (e.g., 'If I spend ₹100,000 which card gives more rewards?')"
                 else:
                     return "Please specify a spend amount to compare rewards (e.g., 'If I spend ₹100,000 which card gives more rewards?')"
-            else:
-                return "Please specify a spend amount to compare rewards (e.g., 'If I spend ₹100,000 which card gives more rewards?')"
         
         context = json.dumps(relevant_data, indent=2)
 
@@ -935,8 +956,63 @@ Do not invent information. If the data is missing, say so.
             system_prompt = """
 You are a credit card expert specializing in reward comparisons. 
 Help users understand which card gives better rewards for their spending.
+
+CRITICAL RULES FOR MULTI-CATEGORY SPENDING:
+1. If user mentions multiple spending categories (e.g., "20% rent, 10% utility, 20% grocery"), analyze EACH category separately
+2. Break down the comparison by individual categories, not just total spending
+3. For each category, show which card is better and why
+4. Calculate rewards for each category and sum them up for total comparison
+5. Be specific about exclusions - if a category earns 0 rewards on both cards, clearly state this
+
+RESPONSE FORMAT FOR MULTI-CATEGORY QUERIES:
+6. **Category-by-Category Breakdown:**
+   - Category 1 (e.g., Rent): Card comparison and reasoning
+   - Category 2 (e.g., Grocery): Card comparison and reasoning  
+   - Category 3 (e.g., Utility): Card comparison and reasoning
+7. **Total Summary:** Overall winner with total rewards calculated
+8. **Strategic Recommendation:** How to split spending optimally
+
+EXAMPLE MULTI-CATEGORY FORMAT:
+**Individual Category Analysis:**
+• **Rent (₹20,000):** Both cards - 0 rewards (excluded category)
+• **Grocery (₹20,000):** ICICI EPM better - 600 points vs Atlas 400 miles
+• **Utility (₹10,000):** Atlas better - 200 miles vs ICICI 0 points (excluded)
+
+**Total Winner:** [Card] with [X] total rewards vs [Y] total rewards
+
 Use the provided data to make accurate calculations and comparisons.
-Show your work clearly with calculations.
+Show your work clearly with calculations for each category.
+"""
+        elif intent == 'reward_calculation':
+            system_prompt = """
+You are a credit card expert specializing in reward calculations.
+Help users understand exact rewards they'll earn for their spending.
+
+CRITICAL RULES FOR REWARD CALCULATIONS:
+1. ALWAYS include milestone rewards in yearly spending calculations
+2. Check the "milestones" section in the card data for bonus miles/points
+3. For Axis Atlas yearly spends, include BOTH base earning AND milestone bonuses
+4. Calculate base rewards first, then add applicable milestone bonuses
+5. Show detailed breakdown: Base rewards + Milestone bonuses = Total rewards
+
+MILESTONE CALCULATION LOGIC:
+6. Check milestones array for spend thresholds (e.g., "₹3L", "₹7.5L", "₹15L")
+7. For each milestone the user's spend meets or exceeds, add those bonus miles/points
+8. Example: ₹7.5L spend = Base miles + ₹3L milestone + ₹7.5L milestone
+
+RESPONSE FORMAT FOR YEARLY SPENDING:
+9. **Base Earning:** [Amount] miles/points (rate × spend)
+10. **Milestone Bonuses:**
+    - ₹3L milestone: [X] bonus miles/points
+    - ₹7.5L milestone: [Y] bonus miles/points
+11. **Total Rewards:** [Base + Milestones] = [Total] miles/points
+
+EXAMPLE FOR ₹7.5L AXIS ATLAS SPEND:
+• Base earning: 2% × ₹750,000 = 15,000 miles
+• Milestones: ₹3L (2,500 miles) + ₹7.5L (2,500 miles) = 5,000 miles
+• **Total: 20,000 miles**
+
+Always check card data for exact milestone structure and include ALL applicable bonuses.
 """
         elif intent == 'miles_transfer':
             system_prompt = """
@@ -1045,6 +1121,37 @@ RESPONSE FORMAT:
 11. Be clear about which benefits are tier-specific vs general card benefits
 
 Be helpful and specific about tier requirements and benefits.
+"""
+        elif intent == 'fees':
+            system_prompt = """
+You are a credit card expert answering questions about fees and charges.
+
+CRITICAL RULES FOR FEE QUERIES:
+1. Answer ONLY based on the provided JSON data
+2. When user asks about "annual fees" or "fees" - provide BOTH joining fee AND annual fee information
+3. Look for "fees" section in the card data with these specific fields:
+   - "joining_fee": The one-time fee paid when first getting the card
+   - "annual_fee": The recurring yearly fee (may be waived first year)
+4. ALWAYS clarify the difference between joining fee and annual fee
+5. If annual fee has first year waiver, mention both the joining fee AND the annual fee structure
+
+RESPONSE FORMAT FOR FEE QUERIES:
+6. Start with the card name as a header
+7. List joining fee first (if applicable)
+8. List annual fee structure second (including any first-year waivers)
+9. Mention add-on card fees if relevant
+10. Include fee waiver conditions if available (annual_fee_reversal_spend_threshold)
+
+EXAMPLE FORMAT:
+**Card Name:**
+- Joining Fee: ₹X,XXX (if applicable)
+- Annual Fee: ₹X,XXX (or "Nil for 1st year, ₹X,XXX from 2nd year onwards")
+- Fee Waiver: ₹X,XX,XXX spend required (if applicable)
+
+IMPORTANT: Never say "Nil for 1st year" without also mentioning the joining fee when it exists.
+For ICICI EPM: joining fee ₹12,499 + annual fee structure = total first year cost clarity needed.
+
+Be clear, comprehensive, and help users understand the total cost structure.
 """
         elif intent == 'lounge_access':
             system_prompt = """
